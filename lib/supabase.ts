@@ -42,12 +42,15 @@ export async function getBRFBySlug(slug: string): Promise<BRF | null> {
 }
 
 export async function searchBRFs(query: string, limit = 30): Promise<BRF[]> {
-  const { data, error } = await supabase.rpc('search_foretag', {
-    search_query: query,
-    result_limit: limit,
-  })
+  const { data, error } = await supabase
+    .from('foretag')
+    .select('*')
+    .eq('juridisk_form', 'Bostadsrättsföreningar')
+    .ilike('namn', `%${query}%`)
+    .order('rank_score', { ascending: false })
+    .limit(limit)
   if (error) return []
-  return (data as BRF[]).filter(r => r.juridisk_form === 'Bostadsrättsföreningar')
+  return data as BRF[]
 }
 
 export async function getBRFsByCity(city: string, limit = 30): Promise<BRF[]> {

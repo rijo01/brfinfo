@@ -42,11 +42,17 @@ export async function getBRFBySlug(slug: string): Promise<BRF | null> {
 }
 
 export async function searchBRFs(query: string, limit = 30): Promise<BRF[]> {
+  // Strip common prefixes to improve matching
+  const stripped = query
+    .replace(/^brf\s+/i, '')
+    .replace(/^bostadsrättsföreningen?\s+/i, '')
+    .trim()
+
   const { data, error } = await supabase
     .from('foretag')
     .select('*')
     .eq('juridisk_form', 'Bostadsrättsföreningar')
-    .ilike('namn', `%${query}%`)
+    .or(`namn.ilike.%${stripped}%,postort.ilike.%${stripped}%,adress.ilike.%${stripped}%`)
     .order('rank_score', { ascending: false })
     .limit(limit)
   if (error) return []

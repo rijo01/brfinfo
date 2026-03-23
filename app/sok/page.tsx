@@ -19,7 +19,14 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 export default async function SearchPage({ searchParams }: Props) {
   const { q = '', stad = '' } = await searchParams
   let results: any[] = []
-  if (q) results = await searchBRFs(q, 40)
+  let searchError: string | null = null
+  if (q) {
+    try {
+      results = await searchBRFs(q, 40)
+    } catch(e: any) {
+      searchError = e.message
+    }
+  }
   else if (stad) results = await getBRFsByCity(stad, 40)
 
   return (
@@ -34,6 +41,9 @@ export default async function SearchPage({ searchParams }: Props) {
       </div>
 
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 24px' }}>
+        {searchError && (
+          <p style={{ fontSize: 14, color: 'red', marginBottom: 24 }}>FEL: {searchError}</p>
+        )}
         {(q || stad) && (
           <p style={{ fontSize: 14, color: '#6A8090', marginBottom: 24 }}>
             {results.length > 0 ? `Visar ${results.length} BRF:er` : 'Inga BRF:er hittades.'}

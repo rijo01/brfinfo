@@ -21,12 +21,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const { createClient } = await import('@supabase/supabase-js')
     const supabase = createClient(url, key)
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('foretag').select('slug')
       .eq('juridisk_form', 'Bostadsrättsföreningar')
-      .eq('status', 'AKTIV')
       .not('slug', 'is', null)
       .limit(50000)
+    
+    if (error) console.error('Sitemap Supabase error:', error)
 
     const brfPages: MetadataRoute.Sitemap = (data ?? []).map((r: any) => ({
       url: `${base}/brf/${r.slug}`, lastModified: new Date(), changeFrequency: 'monthly' as const, priority: 0.6,

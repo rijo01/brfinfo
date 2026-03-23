@@ -1,3 +1,4 @@
+'use client'
 import Link from 'next/link'
 import { BRF, avgift, bildadAr, formatOrgnr, initials } from '@/lib/supabase'
 
@@ -26,10 +27,8 @@ export default function BRFCard({ brf }: { brf: BRF }) {
             <span style={{ fontSize: 11, padding: '3px 8px', borderRadius: 4, background: 'rgba(27,124,110,0.1)', color: '#1B7C6E', fontWeight: 500 }}>✓ Verifierad</span>
           )}
         </div>
-
         <h3 itemProp="name" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 15, fontWeight: 400, color: '#0F1F2D', marginBottom: 3, lineHeight: 1.3 }}>{brf.namn}</h3>
         <p style={{ fontSize: 12, color: '#8A9BAB', marginBottom: 12 }}>{orgnr}{year !== 'Okänt' && ` · Bildad ${year}`}</p>
-
         <div style={{ display: 'flex', gap: 20, marginBottom: 12 }}>
           <div>
             <div style={{ fontSize: 13, fontWeight: 500, color: '#1A2B38' }}>{fee}</div>
@@ -40,13 +39,11 @@ export default function BRFCard({ brf }: { brf: BRF }) {
             <div style={{ fontSize: 11, color: '#8A9BAB', textTransform: 'uppercase', letterSpacing: '0.3px' }}>Status</div>
           </div>
         </div>
-
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, color: '#4A6070' }}>
           <span style={{ width: 6, height: 6, background: '#23A090', borderRadius: '50%', display: 'inline-block', flexShrink: 0 }} />
           <span itemProp="addressLocality">{brf.postort}</span>
           {brf.kommun && brf.kommun !== brf.postort && <span style={{ color: '#8A9BAB' }}>· {brf.kommun}</span>}
         </div>
-
         <div style={{ borderTop: '1px solid rgba(15,31,45,0.06)', marginTop: 12, paddingTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: 12.5, color: '#1B7C6E', fontWeight: 500 }}>Visa profil →</span>
           {brf.lan && <span style={{ fontSize: 11, background: 'rgba(27,124,110,0.07)', color: '#1B7C6E', padding: '3px 8px', borderRadius: 4 }}>{brf.lan.replace(' län', '')}</span>}

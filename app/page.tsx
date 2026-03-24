@@ -25,15 +25,9 @@ const CITIES = [
   { slug: 'lund', name: 'Lund', count: 389 },
 ]
 
-const FALLBACK = [
-  { orgnr: '7696001234', namn: 'Brf Hornsgatan 42', postort: 'Stockholm', kommun: 'Stockholm', lan: 'Stockholms län', juridisk_form: 'Bostadsrättsföreningar', startdatum: '1978-03-15', slug: 'brf-hornsgatan-42', rank_score: 800, status: 'AKTIV', adress: 'Hornsgatan 42', telefon: null, email: null, hemsida: null, anstallda: null, bransch: '', infotext: null, lat: null, lng: null, rating: null, review_count: null, featured: true, verified: true },
-  { orgnr: '7696005678', namn: 'Brf Olivedal', postort: 'Göteborg', kommun: 'Göteborg', lan: 'Västra Götalands län', juridisk_form: 'Bostadsrättsföreningar', startdatum: '1965-06-20', slug: 'brf-olivedal', rank_score: 760, status: 'AKTIV', adress: null, telefon: null, email: null, hemsida: null, anstallda: null, bransch: '', infotext: null, lat: null, lng: null, rating: null, review_count: null, featured: true, verified: false },
-  { orgnr: '7696009012', namn: 'Brf Möllevången', postort: 'Malmö', kommun: 'Malmö', lan: 'Skåne län', juridisk_form: 'Bostadsrättsföreningar', startdatum: '1991-09-01', slug: 'brf-mollevangen', rank_score: 720, status: 'AKTIV', adress: null, telefon: null, email: null, hemsida: null, anstallda: null, bransch: '', infotext: null, lat: null, lng: null, rating: null, review_count: null, featured: false, verified: true },
-]
 
 export default async function HomePage() {
-  let featured = await getFeaturedBRFs(6)
-  if (!featured.length) featured = FALLBACK as any
+  const featured = await getFeaturedBRFs(6)
 
   return (
     <>

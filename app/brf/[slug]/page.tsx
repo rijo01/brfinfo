@@ -99,6 +99,43 @@ export default async function BRFPage({ params }: Props) {
               ))}
             </div>
 
+            {/* Bolagsverket */}
+            {brf.bolagsverket_data && (
+              <div style={card}>
+                <h2 style={cardTitle}>Från Bolagsverket</h2>
+
+                {brf.bolagsverket_data.verksamhetsbeskrivning?.beskrivning && (
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{ fontSize: 11, color: '#8A9BAB', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: 6 }}>Verksamhetsbeskrivning</div>
+                    <p style={{ fontSize: 14, color: '#4A6070', lineHeight: 1.7 }}>{brf.bolagsverket_data.verksamhetsbeskrivning.beskrivning}</p>
+                  </div>
+                )}
+
+                {brf.bolagsverket_data.postadressOrganisation?.postadress && (
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{ fontSize: 11, color: '#8A9BAB', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: 6 }}>Registrerad adress</div>
+                    <p style={{ fontSize: 14, color: '#4A6070', lineHeight: 1.7 }}>
+                      {brf.bolagsverket_data.postadressOrganisation.postadress}
+                      {brf.bolagsverket_data.postadressOrganisation.postnummer && `, ${brf.bolagsverket_data.postadressOrganisation.postnummer}`}
+                      {brf.bolagsverket_data.postadressOrganisation.postort && ` ${brf.bolagsverket_data.postadressOrganisation.postort}`}
+                    </p>
+                  </div>
+                )}
+
+                {brf.bolagsverket_data.naringsgrenOrganisation?.sni && brf.bolagsverket_data.naringsgrenOrganisation.sni.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 11, color: '#8A9BAB', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: 6 }}>SNI-branschkoder</div>
+                    {brf.bolagsverket_data.naringsgrenOrganisation.sni.map((sni, i) => (
+                      <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 0', borderBottom: i < (brf.bolagsverket_data!.naringsgrenOrganisation!.sni!.length - 1) ? '1px solid rgba(15,31,45,0.05)' : 'none', fontSize: 14 }}>
+                        {sni.kod && <span style={{ color: '#1B7C6E', fontWeight: 500, fontFamily: 'monospace' }}>{sni.kod}</span>}
+                        <span style={{ color: '#4A6070' }}>{sni.klartext}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* FAQ */}
             <div style={card} itemScope itemType="https://schema.org/FAQPage">
               <h2 style={cardTitle}>Vanliga frågor om {brf.namn}</h2>

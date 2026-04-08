@@ -28,6 +28,12 @@ export type BRF = {
   review_count: number | null
   featured: boolean | null
   verified: boolean | null
+  bolagsverket_data: {
+    verksamhetsbeskrivning?: { beskrivning?: string }
+    postadressOrganisation?: { postadress?: string; postnummer?: string; postort?: string }
+    naringsgrenOrganisation?: { sni?: Array<{ kod?: string; klartext?: string }> }
+    organisationsdatum?: { registreringsdatum?: string }
+  } | null
 }
 
 export async function getBRFBySlug(slug: string): Promise<BRF | null> {

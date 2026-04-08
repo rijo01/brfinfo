@@ -171,7 +171,7 @@ export default async function BRFPage({ params }: Props) {
             <div style={card}>
               <h3 style={{ fontSize: 13, fontWeight: 500, color: '#0F1F2D', marginBottom: 10 }}>Externa källor</h3>
               <a href={`https://www.bolagsverket.se/omregistret/sokforetagochorganisationer/${brf.orgnr}`} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: 13, color: '#1B7C6E', textDecoration: 'none', padding: '8px 0', borderBottom: '1px solid rgba(15,31,45,0.06)' }}>↗ Bolagsverket</a>
-              <a href={`https://www.allabolag.se/${brf.orgnr.replace('-', '')}`} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: 13, color: '#1B7C6E', textDecoration: 'none', padding: '8px 0' }}>↗ Allabolag.se</a>
+              <a href={`https://infofinder.se/foretag/${brf.slug}`} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: 13, color: '#1B7C6E', textDecoration: 'none', padding: '8px 0' }}>↗ InfoFinder.se</a>
             </div>
           </div>
         </div>

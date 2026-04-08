@@ -76,7 +76,7 @@ export async function getFeaturedBRFs(limit = 6): Promise<BRF[]> {
     .from('foretag')
     .select('*')
     .eq('juridisk_form', 'Bostadsrättsföreningar')
-    .eq('status', 'AKTIV')
+    .eq('status', 'Är verksam')
     .order('rank_score', { ascending: false })
     .limit(limit)
   if (error) return []

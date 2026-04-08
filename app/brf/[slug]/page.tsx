@@ -61,7 +61,7 @@ export default async function BRFPage({ params }: Props) {
               <h1 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 36, fontWeight: 400, color: '#0F1F2D', letterSpacing: '-1px', lineHeight: 1.1, marginBottom: 6 }}>{brf.namn}</h1>
               <p style={{ fontSize: 14, color: '#6A8090', marginBottom: 20 }}>{orgnr} · {brf.postort}, {brf.lan}</p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
-                {[{ label: 'Bildad', value: year }, { label: 'Avg/kvm/mån', value: fee }, { label: 'Status', value: brf.status === 'AKTIV' ? 'Aktiv' : (brf.status ?? '—') }, { label: 'Ort', value: brf.postort }].map(m => (
+                {[{ label: 'Bildad', value: year }, { label: 'Avg/kvm/mån', value: fee }, { label: 'Status', value: brf.status === 'Är verksam' ? 'Aktiv' : (brf.status ?? '—') }, { label: 'Ort', value: brf.postort }].map(m => (
                   <div key={m.label} style={{ background: '#F5F1E8', borderRadius: 10, padding: '14px 16px' }}>
                     <div style={{ fontSize: 11, color: '#8A9BAB', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: 4 }}>{m.label}</div>
                     <div style={{ fontSize: 15, fontWeight: 500, color: '#0F1F2D' }}>{m.value}</div>

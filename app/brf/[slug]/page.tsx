@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getBRFBySlug, formatOrgnr, bildadAr, avgift } from '@/lib/supabase'
+import { getBRFBySlug, formatOrgnr, bildadAr, avgift, parseBvData, slugify } from '@/lib/supabase'
 
 // Next.js 15: params is a Promise
 type Props = { params: Promise<{ slug: string }> }
@@ -26,6 +26,8 @@ export default async function BRFPage({ params }: Props) {
   const year = bildadAr(brf.startdatum)
   const orgnr = formatOrgnr(brf.orgnr)
 
+  const bvData = parseBvData(brf)
+  const forvaltare = bvData?.postadress_detaljer?.coAdress?.trim().replace(/^c\/o\s+/i, '').trim() || null
   const card = { background: 'white', border: '1px solid rgba(15,31,45,0.09)', borderRadius: 12, padding: '24px 28px', marginBottom: 16 }
   const cardTitle = { fontFamily: 'Fraunces, Georgia, serif', fontSize: 18, fontWeight: 400, color: '#0F1F2D', marginBottom: 16, letterSpacing: '-0.3px' } as React.CSSProperties
 
@@ -100,33 +102,40 @@ export default async function BRFPage({ params }: Props) {
             </div>
 
             {/* Bolagsverket */}
-            {brf.bolagsverket_data && (
+            {bvData && (
               <div style={card}>
                 <h2 style={cardTitle}>Från Bolagsverket</h2>
 
-                {brf.bolagsverket_data.verksamhetsbeskrivning?.beskrivning && (
+                {bvData.verksamhetsbeskrivning && (
                   <div style={{ marginBottom: 16 }}>
                     <div style={{ fontSize: 11, color: '#8A9BAB', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: 6 }}>Verksamhetsbeskrivning</div>
-                    <p style={{ fontSize: 14, color: '#4A6070', lineHeight: 1.7 }}>{brf.bolagsverket_data.verksamhetsbeskrivning.beskrivning}</p>
+                    <p style={{ fontSize: 14, color: '#4A6070', lineHeight: 1.7 }}>{bvData.verksamhetsbeskrivning}</p>
                   </div>
                 )}
 
-                {brf.bolagsverket_data.postadressOrganisation?.postadress && (
+                {bvData.adress_bv && (
                   <div style={{ marginBottom: 16 }}>
                     <div style={{ fontSize: 11, color: '#8A9BAB', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: 6 }}>Registrerad adress</div>
                     <p style={{ fontSize: 14, color: '#4A6070', lineHeight: 1.7 }}>
-                      {brf.bolagsverket_data.postadressOrganisation.postadress}
-                      {brf.bolagsverket_data.postadressOrganisation.postnummer && `, ${brf.bolagsverket_data.postadressOrganisation.postnummer}`}
-                      {brf.bolagsverket_data.postadressOrganisation.postort && ` ${brf.bolagsverket_data.postadressOrganisation.postort}`}
+                      {bvData.adress_bv}
                     </p>
                   </div>
                 )}
 
-                {brf.bolagsverket_data.naringsgrenOrganisation?.sni && brf.bolagsverket_data.naringsgrenOrganisation.sni.length > 0 && (
+                {forvaltare && (
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{ fontSize: 11, color: '#8A9BAB', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: 6 }}>Förvaltare</div>
+                    <Link href={`/forvaltare/${slugify(forvaltare)}`} style={{ fontSize: 14, color: '#1B7C6E', textDecoration: 'none', fontWeight: 500 }}>
+                      {forvaltare} →
+                    </Link>
+                  </div>
+                )}
+
+                {bvData.sni_koder && bvData.sni_koder.length > 0 && (
                   <div>
                     <div style={{ fontSize: 11, color: '#8A9BAB', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: 6 }}>SNI-branschkoder</div>
-                    {brf.bolagsverket_data.naringsgrenOrganisation.sni.map((sni, i) => (
-                      <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 0', borderBottom: i < (brf.bolagsverket_data!.naringsgrenOrganisation!.sni!.length - 1) ? '1px solid rgba(15,31,45,0.05)' : 'none', fontSize: 14 }}>
+                    {bvData.sni_koder.map((sni, i) => (
+                      <div key={i} style={{ display: 'flex', gap: 8, padding: '6px 0', borderBottom: i < (bvData.sni_koder!.length - 1) ? '1px solid rgba(15,31,45,0.05)' : 'none', fontSize: 14 }}>
                         {sni.kod && <span style={{ color: '#1B7C6E', fontWeight: 500, fontFamily: 'monospace' }}>{sni.kod}</span>}
                         <span style={{ color: '#4A6070' }}>{sni.klartext}</span>
                       </div>

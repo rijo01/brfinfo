@@ -28,11 +28,15 @@ export type BRF = {
   review_count: number | null
   featured: boolean | null
   verified: boolean | null
+  forvaltare: string | null
   bolagsverket_data: {
-    verksamhetsbeskrivning?: { beskrivning?: string }
-    postadressOrganisation?: { postadress?: string; postnummer?: string; postort?: string }
-    naringsgrenOrganisation?: { sni?: Array<{ kod?: string; klartext?: string }> }
-    organisationsdatum?: { registreringsdatum?: string }
+    verksamhetsbeskrivning?: string
+    postadress_detaljer?: { coAdress?: string; utdelningsadress?: string; postnummer?: string; postort?: string }
+    adress_bv?: string
+    sni_koder?: Array<{ kod?: string; klartext?: string }>
+    registreringsdatum_bv?: string
+    verksam?: string
+    namn_bv?: string[]
   } | null
 }
 
@@ -87,6 +91,108 @@ export async function getFeaturedBRFs(limit = 6): Promise<BRF[]> {
     .limit(limit)
   if (error) return []
   return data as BRF[]
+}
+
+export type Forvaltare = {
+  name: string
+  slug: string
+  count: number
+}
+
+export function parseBvData(brf: BRF): BRF['bolagsverket_data'] {
+  if (!brf.bolagsverket_data) return null
+  if (typeof brf.bolagsverket_data === 'string') {
+    try { return JSON.parse(brf.bolagsverket_data) } catch { return null }
+  }
+  return brf.bolagsverket_data
+}
+
+function extractForvaltare(brf: BRF): string | null {
+  if (brf.forvaltare) return brf.forvaltare
+  const bv = parseBvData(brf)
+  const co = bv?.postadress_detaljer?.coAdress
+  if (!co || typeof co !== 'string') return null
+  const trimmed = co.trim()
+  if (/^c\/o\s+[A-ZÅÄÖ][a-zåäö]+\s+[A-ZÅÄÖ]/i.test(trimmed)) return null
+  return trimmed.replace(/^c\/o\s+/i, '').trim() || null
+}
+
+export async function getForvaltareList(): Promise<Forvaltare[]> {
+  // Fetch all BRFs with bolagsverket_data to extract forvaltare from coAdress
+  const allBrfs: BRF[] = []
+  let offset = 0
+  const batchSize = 1000
+  while (true) {
+    const { data, error } = await supabase
+      .from('foretag')
+      .select('orgnr,namn,slug,postort,bolagsverket_data')
+      .eq('juridisk_form', 'Bostadsrättsföreningar')
+      .not('bolagsverket_data', 'is', null)
+      .range(offset, offset + batchSize - 1)
+    if (error || !data || data.length === 0) break
+    allBrfs.push(...(data as BRF[]))
+    if (data.length < batchSize) break
+    offset += batchSize
+  }
+
+  const counts: Record<string, number> = {}
+  for (const brf of allBrfs) {
+    const f = extractForvaltare(brf)
+    if (f) counts[f] = (counts[f] || 0) + 1
+  }
+
+  return Object.entries(counts)
+    .filter(([, count]) => count >= 2) // Only show forvaltare with 2+ BRFs
+    .map(([name, count]) => ({
+      name,
+      slug: slugify(name),
+      count,
+    }))
+    .sort((a, b) => b.count - a.count)
+}
+
+export async function getBRFsByForvaltare(forvaltareName: string, limit = 500): Promise<BRF[]> {
+  // Fetch BRFs and filter by forvaltare (from column or JSON)
+  const allBrfs: BRF[] = []
+  let offset = 0
+  const batchSize = 1000
+  while (true) {
+    const { data, error } = await supabase
+      .from('foretag')
+      .select('*')
+      .eq('juridisk_form', 'Bostadsrättsföreningar')
+      .not('bolagsverket_data', 'is', null)
+      .range(offset, offset + batchSize - 1)
+    if (error || !data || data.length === 0) break
+    allBrfs.push(...(data as BRF[]))
+    if (data.length < batchSize) break
+    offset += batchSize
+  }
+
+  return allBrfs
+    .filter(brf => extractForvaltare(brf) === forvaltareName)
+    .sort((a, b) => (b.rank_score ?? 0) - (a.rank_score ?? 0))
+    .slice(0, limit)
+}
+
+export async function getForvaltareBySlug(slug: string): Promise<{ name: string; brfs: BRF[] } | null> {
+  const list = await getForvaltareList()
+  const match = list.find(f => f.slug === slug)
+  if (!match) return null
+
+  const brfs = await getBRFsByForvaltare(match.name)
+  return { name: match.name, brfs }
+}
+
+export function slugify(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[åä]/g, 'a')
+    .replace(/ö/g, 'o')
+    .replace(/é/g, 'e')
+    .replace(/ü/g, 'u')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
 }
 
 export function formatOrgnr(o: string) {

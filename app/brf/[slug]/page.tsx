@@ -3,6 +3,10 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getBRFBySlug, formatOrgnr, bildadAr, avgift, parseBvData, slugify } from '@/lib/supabase'
 
+function toTitleCase(str: string): string {
+  return str.toLowerCase().replace(/(?:^|\s|[-/])\S/g, (c) => c.toUpperCase())
+}
+
 // Next.js 15: params is a Promise
 type Props = { params: Promise<{ slug: string }> }
 
@@ -28,6 +32,7 @@ export default async function BRFPage({ params }: Props) {
 
   const bvData = parseBvData(brf)
   const forvaltare = bvData?.postadress_detaljer?.coAdress?.trim().replace(/^c\/o\s+/i, '').trim() || null
+  const displayName = toTitleCase(brf.namn)
   const card = { background: 'white', border: '1px solid rgba(15,31,45,0.09)', borderRadius: 12, padding: '24px 28px', marginBottom: 16 }
   const cardTitle = { fontFamily: 'Fraunces, Georgia, serif', fontSize: 18, fontWeight: 400, color: '#0F1F2D', marginBottom: 16, letterSpacing: '-0.3px' } as React.CSSProperties
 
@@ -40,37 +45,43 @@ export default async function BRFPage({ params }: Props) {
         description: `${brf.namn} är en bostadsrättsförening i ${brf.postort}.`,
       })}} />
 
-      {/* BREADCRUMB */}
-      <div style={{ background: 'white', borderBottom: '1px solid rgba(15,31,45,0.07)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '10px 24px', fontSize: 13, color: '#6A8090' }}>
-          <Link href="/" style={{ color: '#1B7C6E', textDecoration: 'none' }}>BRFinfo</Link>
-          {' → '}
-          <Link href={`/stad/${brf.postort?.toLowerCase().replace(/\s+/g, '-').replace(/[åä]/g, 'a').replace(/ö/g, 'o')}`} style={{ color: '#1B7C6E', textDecoration: 'none' }}>
-            BRF i {brf.postort}
-          </Link>
-          {' → '}
-          <span>{brf.namn}</span>
+      {/* HERO */}
+      <section style={{ background: 'linear-gradient(160deg, #0F1F2D 0%, #1A3045 100%)', padding: '0 0 0', position: 'relative', overflow: 'hidden' }}>
+        <div aria-hidden style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(27,124,110,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(27,124,110,0.04) 1px,transparent 1px)', backgroundSize: '40px 40px', pointerEvents: 'none' }} />
+        <div style={{ position: 'relative', maxWidth: 1200, margin: '0 auto', padding: '16px 24px 40px' }}>
+          {/* Breadcrumb */}
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginBottom: 28 }}>
+            <Link href="/" style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'none' }}>BRFinfo</Link>
+            {' → '}
+            <Link href={`/stad/${brf.postort?.toLowerCase().replace(/\s+/g, '-').replace(/[åä]/g, 'a').replace(/ö/g, 'o')}`} style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'none' }}>
+              BRF i {brf.postort}
+            </Link>
+            {' → '}
+            <span style={{ color: 'rgba(255,255,255,0.7)' }}>{displayName}</span>
+          </div>
+          <h1 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 'clamp(28px, 5vw, 42px)', fontWeight: 300, color: 'white', letterSpacing: '-1px', lineHeight: 1.15, marginBottom: 8 }}>{displayName}</h1>
+          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.45)', marginBottom: 24 }}>{orgnr} · {brf.postort}, {brf.lan}</p>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            {[
+              { label: 'Bildad', value: year },
+              { label: 'Avg/kvm', value: fee },
+              { label: 'Status', value: brf.status === 'Är verksam' ? 'Aktiv' : (brf.status ?? '—') },
+              { label: 'Ort', value: brf.postort },
+            ].map(m => (
+              <div key={m.label} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '8px 16px', display: 'flex', gap: 8, alignItems: 'center' }}>
+                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>{m.label}</span>
+                <span style={{ fontSize: 14, fontWeight: 500, color: 'white' }}>{m.value}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 24px' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 24px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 24, alignItems: 'start' }}>
 
           {/* LEFT */}
           <div>
-            {/* Hero */}
-            <div style={{ marginBottom: 24 }}>
-              <h1 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 36, fontWeight: 400, color: '#0F1F2D', letterSpacing: '-1px', lineHeight: 1.1, marginBottom: 6 }}>{brf.namn}</h1>
-              <p style={{ fontSize: 14, color: '#6A8090', marginBottom: 20 }}>{orgnr} · {brf.postort}, {brf.lan}</p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
-                {[{ label: 'Bildad', value: year }, { label: 'Avg/kvm/mån', value: fee }, { label: 'Status', value: brf.status === 'Är verksam' ? 'Aktiv' : (brf.status ?? '—') }, { label: 'Ort', value: brf.postort }].map(m => (
-                  <div key={m.label} style={{ background: '#F5F1E8', borderRadius: 10, padding: '14px 16px' }}>
-                    <div style={{ fontSize: 11, color: '#8A9BAB', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: 4 }}>{m.label}</div>
-                    <div style={{ fontSize: 15, fontWeight: 500, color: '#0F1F2D' }}>{m.value}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
 
             {/* Om */}
             <div style={card}>
@@ -167,20 +178,20 @@ export default async function BRFPage({ params }: Props) {
           </div>
 
           {/* SIDEBAR */}
-          <div style={{ position: 'sticky', top: 80 }}>
-            <div style={{ ...card, marginBottom: 16 }}>
-              <h2 style={{ ...cardTitle, fontSize: 16 }}>Kontakt</h2>
-              {brf.telefon && <div style={{ marginBottom: 10 }}><div style={{ fontSize: 11, color: '#8A9BAB', marginBottom: 2 }}>Telefon</div><a href={`tel:${brf.telefon}`} style={{ fontSize: 14, color: '#1B7C6E', textDecoration: 'none', fontWeight: 500 }}>{brf.telefon}</a></div>}
-              {brf.email && <div style={{ marginBottom: 10 }}><div style={{ fontSize: 11, color: '#8A9BAB', marginBottom: 2 }}>E-post</div><a href={`mailto:${brf.email}`} style={{ fontSize: 14, color: '#1B7C6E', textDecoration: 'none', fontWeight: 500 }}>{brf.email}</a></div>}
-              {!brf.telefon && !brf.email && <p style={{ fontSize: 13, color: '#8A9BAB', lineHeight: 1.5 }}>Kontaktuppgifter saknas. <Link href="/claima" style={{ color: '#1B7C6E' }}>Claima föreningen.</Link></p>}
-              <Link href="/claima" style={{ display: 'block', textAlign: 'center', background: '#C9932A', color: '#0F1F2D', padding: '10px', borderRadius: 8, fontSize: 13.5, fontWeight: 500, textDecoration: 'none', marginTop: 14 }}>
+          <div style={{ position: 'sticky', top: 80, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ background: 'white', border: '1px solid rgba(15,31,45,0.09)', borderRadius: 12, padding: '20px 22px' }}>
+              <h2 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 15, fontWeight: 400, color: '#0F1F2D', marginBottom: 14, letterSpacing: '-0.2px' }}>Kontakt</h2>
+              {brf.telefon && <div style={{ marginBottom: 8 }}><div style={{ fontSize: 10, color: '#8A9BAB', textTransform: 'uppercase', letterSpacing: '0.3px', marginBottom: 2 }}>Telefon</div><a href={`tel:${brf.telefon}`} style={{ fontSize: 13, color: '#1B7C6E', textDecoration: 'none', fontWeight: 500 }}>{brf.telefon}</a></div>}
+              {brf.email && <div style={{ marginBottom: 8 }}><div style={{ fontSize: 10, color: '#8A9BAB', textTransform: 'uppercase', letterSpacing: '0.3px', marginBottom: 2 }}>E-post</div><a href={`mailto:${brf.email}`} style={{ fontSize: 13, color: '#1B7C6E', textDecoration: 'none', fontWeight: 500 }}>{brf.email}</a></div>}
+              {!brf.telefon && !brf.email && <p style={{ fontSize: 12, color: '#8A9BAB', lineHeight: 1.5 }}>Kontaktuppgifter saknas.</p>}
+              <Link href="/claima" style={{ display: 'block', textAlign: 'center', background: '#C9932A', color: '#0F1F2D', padding: '9px', borderRadius: 8, fontSize: 13, fontWeight: 500, textDecoration: 'none', marginTop: 12 }}>
                 Claima denna BRF
               </Link>
             </div>
-            <div style={card}>
-              <h3 style={{ fontSize: 13, fontWeight: 500, color: '#0F1F2D', marginBottom: 10 }}>Externa källor</h3>
-              <a href={`https://www.bolagsverket.se/omregistret/sokforetagochorganisationer/${brf.orgnr}`} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: 13, color: '#1B7C6E', textDecoration: 'none', padding: '8px 0', borderBottom: '1px solid rgba(15,31,45,0.06)' }}>↗ Bolagsverket</a>
-              <a href={`https://infofinder.se/foretag/${brf.slug}`} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: 13, color: '#1B7C6E', textDecoration: 'none', padding: '8px 0' }}>↗ InfoFinder.se</a>
+            <div style={{ background: 'white', border: '1px solid rgba(15,31,45,0.09)', borderRadius: 12, padding: '16px 22px' }}>
+              <h3 style={{ fontSize: 12, fontWeight: 500, color: '#0F1F2D', marginBottom: 8 }}>Externa källor</h3>
+              <a href={`https://www.bolagsverket.se/omregistret/sokforetagochorganisationer/${brf.orgnr}`} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: 12.5, color: '#1B7C6E', textDecoration: 'none', padding: '6px 0', borderBottom: '1px solid rgba(15,31,45,0.06)' }}>Bolagsverket ↗</a>
+              <a href={`https://infofinder.se/foretag/${brf.slug}`} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: 12.5, color: '#1B7C6E', textDecoration: 'none', padding: '6px 0' }}>InfoFinder.se ↗</a>
             </div>
           </div>
         </div>

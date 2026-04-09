@@ -10,21 +10,22 @@ export default function BRFCard({ brf }: { brf: BRF }) {
   const fee = avgift(brf)
   const year = bildadAr(brf.startdatum)
   const orgnr = formatOrgnr(brf.orgnr)
+  const forvaltare = (brf as any).forvaltare?.replace(/^c\/o\s+/i, '').trim() || null
 
   return (
     <Link href={`/brf/${brf.slug}`} style={{ textDecoration: 'none' }}>
       <article
-        style={{ background: 'white', border: '1px solid rgba(15,31,45,0.09)', borderRadius: 12, padding: 20, cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.15s', height: '100%' }}
-        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(27,124,110,0.1)'; (e.currentTarget as HTMLElement).style.borderColor = '#1B7C6E' }}
-        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = ''; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(15,31,45,0.09)' }}
+        style={{ background: 'white', border: '1px solid rgba(15,31,45,0.09)', borderRadius: 12, padding: 20, cursor: 'pointer', transition: 'all 0.2s ease', height: '100%' }}
+        onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'translateY(-3px)'; el.style.boxShadow = '0 12px 32px rgba(15,31,45,0.1)'; el.style.borderColor = '#1B7C6E' }}
+        onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = ''; el.style.boxShadow = ''; el.style.borderColor = 'rgba(15,31,45,0.09)' }}
         itemScope itemType="https://schema.org/Organization"
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-          <div style={{ width: 40, height: 40, borderRadius: 10, background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Fraunces, serif', fontSize: 13, fontWeight: 600, color: 'white' }}>
+          <div style={{ width: 40, height: 40, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Fraunces, serif', fontSize: 13, fontWeight: 600, color: 'white' }}>
             {init}
           </div>
           {brf.verified && (
-            <span style={{ fontSize: 11, padding: '3px 8px', borderRadius: 4, background: 'rgba(27,124,110,0.1)', color: '#1B7C6E', fontWeight: 500 }}>✓ Verifierad</span>
+            <span style={{ fontSize: 11, padding: '3px 8px', borderRadius: 4, background: 'rgba(27,124,110,0.1)', color: '#1B7C6E', fontWeight: 500 }}>Verifierad</span>
           )}
         </div>
         <h3 itemProp="name" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 15, fontWeight: 400, color: '#0F1F2D', marginBottom: 3, lineHeight: 1.3 }}>{brf.namn}</h3>
@@ -44,6 +45,12 @@ export default function BRFCard({ brf }: { brf: BRF }) {
           <span itemProp="addressLocality">{brf.postort}</span>
           {brf.kommun && brf.kommun !== brf.postort && <span style={{ color: '#8A9BAB' }}>· {brf.kommun}</span>}
         </div>
+        {forvaltare && (
+          <div style={{ marginTop: 10, fontSize: 11.5, color: '#6A8090', display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ color: '#8A9BAB' }}>Förvaltas av</span>
+            <span style={{ fontWeight: 500, color: '#4A6070' }}>{forvaltare}</span>
+          </div>
+        )}
         <div style={{ borderTop: '1px solid rgba(15,31,45,0.06)', marginTop: 12, paddingTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: 12.5, color: '#1B7C6E', fontWeight: 500 }}>Visa profil →</span>
           {brf.lan && <span style={{ fontSize: 11, background: 'rgba(27,124,110,0.07)', color: '#1B7C6E', padding: '3px 8px', borderRadius: 4 }}>{brf.lan.replace(' län', '')}</span>}

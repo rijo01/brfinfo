@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
+import ScrollToTop from '@/components/ScrollToTop'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://brfinfo.se'),
@@ -21,6 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <Nav />
+        <ScrollToTop />
         <main>{children}</main>
         <Footer />
       </body>

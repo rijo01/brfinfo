@@ -11,18 +11,18 @@ export const metadata: Metadata = {
 }
 
 const CITIES = [
-  { slug: 'stockholm', name: 'Stockholm', count: 8421 },
-  { slug: 'goteborg', name: 'Göteborg', count: 4218 },
-  { slug: 'malmo', name: 'Malmö', count: 2876 },
-  { slug: 'uppsala', name: 'Uppsala', count: 1543 },
-  { slug: 'linkoping', name: 'Linköping', count: 987 },
-  { slug: 'orebro', name: 'Örebro', count: 742 },
-  { slug: 'vasteras', name: 'Västerås', count: 698 },
-  { slug: 'helsingborg', name: 'Helsingborg', count: 621 },
-  { slug: 'norrkoping', name: 'Norrköping', count: 544 },
-  { slug: 'jonkoping', name: 'Jönköping', count: 487 },
-  { slug: 'umea', name: 'Umeå', count: 412 },
-  { slug: 'lund', name: 'Lund', count: 389 },
+  { slug: 'stockholm', name: 'Stockholm', count: 8421, emoji: 'S' },
+  { slug: 'goteborg', name: 'Göteborg', count: 4218, emoji: 'G' },
+  { slug: 'malmo', name: 'Malmö', count: 2876, emoji: 'M' },
+  { slug: 'uppsala', name: 'Uppsala', count: 1543, emoji: 'U' },
+  { slug: 'linkoping', name: 'Linköping', count: 987, emoji: 'L' },
+  { slug: 'orebro', name: 'Örebro', count: 742, emoji: 'Ö' },
+  { slug: 'vasteras', name: 'Västerås', count: 698, emoji: 'V' },
+  { slug: 'helsingborg', name: 'Helsingborg', count: 621, emoji: 'H' },
+  { slug: 'norrkoping', name: 'Norrköping', count: 544, emoji: 'N' },
+  { slug: 'jonkoping', name: 'Jönköping', count: 487, emoji: 'J' },
+  { slug: 'umea', name: 'Umeå', count: 412, emoji: 'U' },
+  { slug: 'lund', name: 'Lund', count: 389, emoji: 'L' },
 ]
 
 
@@ -70,7 +70,7 @@ export default async function HomePage() {
         ))}
       </div>
 
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '60px 24px' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '60px 24px', background: '#ffffff' }}>
 
         {/* FEATURED */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 24 }}>
@@ -83,11 +83,14 @@ export default async function HomePage() {
 
         {/* CITIES */}
         <h2 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 26, fontWeight: 400, color: '#0F1F2D', letterSpacing: '-0.5px', marginBottom: 20 }}>BRF:er per stad</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 10, marginBottom: 60 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(165px,1fr))', gap: 10, marginBottom: 60 }}>
           {CITIES.map(c => (
-            <Link key={c.slug} href={`/stad/${c.slug}`} style={{ display: 'block', background: 'white', border: '1px solid rgba(15,31,45,0.09)', borderRadius: 10, padding: '14px', textDecoration: 'none' }}>
-              <div style={{ fontSize: 14, fontWeight: 500, color: '#0F1F2D', marginBottom: 2 }}>{c.name}</div>
-              <div style={{ fontSize: 12, color: '#8A9BAB' }}>{c.count.toLocaleString('sv-SE')} BRF:er</div>
+            <Link key={c.slug} href={`/stad/${c.slug}`} style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'white', border: '1px solid rgba(15,31,45,0.09)', borderRadius: 10, padding: '14px 16px', textDecoration: 'none', transition: 'border-color 0.15s, box-shadow 0.15s' }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#0F1F2D', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Fraunces, serif', fontSize: 13, fontWeight: 600, color: 'white', flexShrink: 0 }}>{c.emoji}</div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 500, color: '#0F1F2D', lineHeight: 1.2 }}>{c.name}</div>
+                <div style={{ fontSize: 11.5, color: '#8A9BAB' }}>{c.count.toLocaleString('sv-SE')} BRF:er</div>
+              </div>
             </Link>
           ))}
         </div>

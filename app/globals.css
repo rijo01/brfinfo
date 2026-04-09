@@ -10,6 +10,10 @@
   --cream: #F5F1E8;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: 'DM Sans', system-ui, sans-serif;
   background: var(--cream);

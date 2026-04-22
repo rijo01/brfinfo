@@ -17,6 +17,9 @@ const META: Record<string, { name: string; count: number; desc: string; areas: s
   helsingborg: { name: 'Helsingborg', count: 621, desc: 'BRF:er i Helsingborg med org.nr och styrelseinfo.', areas: ['Centrum', 'Drottninghög', 'Fredriksdal', 'Olympia', 'Råå', 'Rydebäck', 'Mörarp', 'Allerum'] },
   norrkoping: { name: 'Norrköping', count: 544, desc: 'Sök BRF:er i Norrköping med styrelseinfo.', areas: ['Centrum', 'Ljura', 'Hageby', 'Vilbergen', 'Navestad', 'Åby', 'Kvillinge', 'Kimstad'] },
   jonkoping: { name: 'Jönköping', count: 487, desc: 'BRF:er i Jönköping — register med styrelseinfo.', areas: ['Centrum', 'Huskvarna', 'Råslätt', 'Österängen', 'Barnarp', 'Sandseryd', 'Norrahammar', 'Bankeryd'] },
+  gavle: { name: 'Gävle', count: 389, desc: 'Hitta BRF:er i Gävle med styrelseinfo, avgifter och kontaktuppgifter. Register över 389 bostadsrättsföreningar.', areas: ['Centrum', 'Bomhus', 'Sätra', 'Stigslund', 'Hemlingby', 'Strömsbro', 'Hille', 'Valbo'] },
+  boras: { name: 'Borås', count: 341, desc: 'BRF:er i Borås — jämför avgifter och styrelseinfo för 341 bostadsrättsföreningar.', areas: ['Centrum', 'Hässleholmen', 'Norrby', 'Göta', 'Brämhult', 'Sandared', 'Dalsjöfors', 'Fristad'] },
+  eskilstuna: { name: 'Eskilstuna', count: 298, desc: 'Sök bland BRF:er i Eskilstuna med org.nr, styrelseinfo och avgiftsuppgifter.', areas: ['Centrum', 'Fröslunda', 'Skiftinge', 'Råbergstorp', 'Hageby', 'Lagersberg', 'Torshälla', 'Kjula'] },
   umea: { name: 'Umeå', count: 412, desc: 'Hitta BRF:er i Umeå med komplett registerdata.', areas: ['Centrum', 'Ålidhem', 'Haga', 'Mariehem', 'Tomtebo', 'Carlshem', 'Teg', 'Ersboda'] },
   lund: { name: 'Lund', count: 389, desc: 'BRF:er i Lund med styrelseinfo och avgifter.', areas: ['Centrum', 'Norra Fäladen', 'Klostergården', 'Kobjer', 'Linero', 'Väster', 'Brunnshög', 'Stångby'] },
 }

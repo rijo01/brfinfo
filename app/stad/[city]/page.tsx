@@ -20,6 +20,9 @@ const META: Record<string, { name: string; count: number; desc: string; areas: s
   gavle: { name: 'Gävle', count: 389, desc: 'Hitta BRF:er i Gävle med styrelseinfo, avgifter och kontaktuppgifter. Register över 389 bostadsrättsföreningar.', areas: ['Centrum', 'Bomhus', 'Sätra', 'Stigslund', 'Hemlingby', 'Strömsbro', 'Hille', 'Valbo'] },
   boras: { name: 'Borås', count: 341, desc: 'BRF:er i Borås — jämför avgifter och styrelseinfo för 341 bostadsrättsföreningar.', areas: ['Centrum', 'Hässleholmen', 'Norrby', 'Göta', 'Brämhult', 'Sandared', 'Dalsjöfors', 'Fristad'] },
   eskilstuna: { name: 'Eskilstuna', count: 298, desc: 'Sök bland BRF:er i Eskilstuna med org.nr, styrelseinfo och avgiftsuppgifter.', areas: ['Centrum', 'Fröslunda', 'Skiftinge', 'Råbergstorp', 'Hageby', 'Lagersberg', 'Torshälla', 'Kjula'] },
+  karlstad: { name: 'Karlstad', count: 412, desc: 'Hitta BRF:er i Karlstad vid Klarälven. Register med styrelseinfo och avgifter för 412 bostadsrättsföreningar.', areas: ['Centrum', 'Norrstrand', 'Sydöstra', 'Färjestad', 'Kronoparken', 'Rud', 'Viken', 'Grums'] },
+  lulea: { name: 'Luleå', count: 267, desc: 'BRF:er i Luleå – styrelseinfo och avgifter för 267 bostadsrättsföreningar i Norrbotten.', areas: ['Centrum', 'Björkskatan', 'Bergnäset', 'Råneå', 'Gammelstad', 'Hertsön', 'Kronan', 'Porsön'] },
+  sundsvall: { name: 'Sundsvall', count: 334, desc: 'Hitta BRF:er i Sundsvall med styrelseinfo och kontaktuppgifter. 334 föreningar i Medelpads residensstad.', areas: ['Centrum', 'Sidsjö', 'Norrmalm', 'Bosvedjan', 'Kovland', 'Timrå', 'Skönsmon', 'Alnö'] },
   umea: { name: 'Umeå', count: 412, desc: 'Hitta BRF:er i Umeå med komplett registerdata.', areas: ['Centrum', 'Ålidhem', 'Haga', 'Mariehem', 'Tomtebo', 'Carlshem', 'Teg', 'Ersboda'] },
   lund: { name: 'Lund', count: 389, desc: 'BRF:er i Lund med styrelseinfo och avgifter.', areas: ['Centrum', 'Norra Fäladen', 'Klostergården', 'Kobjer', 'Linero', 'Väster', 'Brunnshög', 'Stångby'] },
 }

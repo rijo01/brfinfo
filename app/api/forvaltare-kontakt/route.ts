@@ -13,12 +13,13 @@ export async function POST(req: NextRequest) {
     await resend.emails.send({
       from: 'BRFinfo <noreply@brfinfo.se>',
       to: process.env.LEAD_EMAIL ?? 'info@brfinfo.se',
-      subject: `Förvaltare-partner: ${body.forvaltare}`,
+      subject: `Förvaltare-partner: ${body.forvaltare}${body.paket ? ` (${body.paket})` : ''}`,
       html: `<h2>Ny partnerförfrågan</h2>
-<p><strong>Förvaltare:</strong> ${body.forvaltare}</p>
+<p><strong>Företag/Förvaltare:</strong> ${body.forvaltare}</p>
 <p><strong>Namn:</strong> ${body.namn}</p>
 <p><strong>E-post:</strong> ${body.email}</p>
 <p><strong>Telefon:</strong> ${body.telefon || '—'}</p>
+<p><strong>Önskat paket:</strong> ${body.paket || '—'}</p>
 <p><strong>Meddelande:</strong><br>${body.meddelande || '—'}</p>`,
     })
     return NextResponse.json({ ok: true })

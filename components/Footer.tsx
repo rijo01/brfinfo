@@ -15,7 +15,7 @@ export default function Footer() {
           </div>
           {[
             { title: 'Hitta BRF', links: [{ href: '/sok', label: 'Sök BRF' }, { href: '/stad/stockholm', label: 'Stockholm' }, { href: '/stad/goteborg', label: 'Göteborg' }, { href: '/stad/malmo', label: 'Malmö' }] },
-            { title: 'För företag', links: [{ href: '/claima', label: 'Claima BRF' }, { href: '/forvaltare', label: 'Förvaltarpartner' }, { href: '/premium', label: 'BRF Premium' }] },
+            { title: 'För företag', links: [{ href: '/claima', label: 'Claima BRF' }, { href: '/forvaltare-partner', label: 'Bli partner' }, { href: '/forvaltare', label: 'Alla förvaltare' }] },
             { title: 'Om oss', links: [{ href: '/om', label: 'Om BRFinfo' }, { href: '/integritet', label: 'Integritetspolicy' }, { href: '/kontakt', label: 'Kontakt' }] },
             { title: 'Resurser', links: [{ href: 'https://www.infofinder.se', label: 'Hitta företag på InfoFinder', external: true }] },
           ].map(col => (

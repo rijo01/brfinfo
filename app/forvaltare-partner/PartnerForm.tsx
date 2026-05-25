@@ -25,15 +25,26 @@ export default function PartnerForm({ defaultPackage = 'partner' }: { defaultPac
     setLoading(true)
     setErr(null)
     try {
-      const res = await fetch('/api/forvaltare-kontakt', {
+      const res = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
         body: JSON.stringify({
-          ...form,
-          forvaltare: form.foretag,
+          access_key: '8cef0758-0330-4784-9b12-ada44eb712b6',
+          subject: `Ny partnerförfrågan: ${form.foretag}`,
+          from_name: 'BRFinfo Partner-formulär',
+          foretag: form.foretag,
+          namn: form.namn,
+          email: form.email,
+          telefon: form.telefon,
+          paket: form.paket,
+          meddelande: form.meddelande,
         }),
       })
-      if (!res.ok) throw new Error('Något gick fel')
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok || !data.success) throw new Error(data.message || 'Något gick fel')
       setSent(true)
     } catch (e: any) {
       setErr('Kunde inte skicka. Försök igen eller mejla info@brfinfo.se')

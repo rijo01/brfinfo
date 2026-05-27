@@ -30,6 +30,9 @@ const META: Record<string, { name: string; count: number; desc: string; areas: s
   vaxjo: { name: 'Växjö', count: 243, desc: 'Sök bland BRF:er i Växjö med org.nr och styrelseinfo. 243 bostadsrättsföreningar i Kronoberg.', areas: ['Centrum', 'Araby', 'Dalbo', 'Öjaby', 'Toftaholm', 'Lammhult', 'Braås', 'Rottne'] },
   umea: { name: 'Umeå', count: 412, desc: 'Hitta BRF:er i Umeå med komplett registerdata.', areas: ['Centrum', 'Ålidhem', 'Haga', 'Mariehem', 'Tomtebo', 'Carlshem', 'Teg', 'Ersboda'] },
   lund: { name: 'Lund', count: 389, desc: 'BRF:er i Lund med styrelseinfo och avgifter.', areas: ['Centrum', 'Norra Fäladen', 'Klostergården', 'Kobjer', 'Linero', 'Väster', 'Brunnshög', 'Stångby'] },
+  borlange: { name: 'Borlänge', count: 312, desc: 'Hitta BRF:er i Borlänge med styrelseinfo och avgifter. 312 bostadsrättsföreningar i Dalarnas industristjärna.', areas: ['Centrum', 'Tjärna Ängar', 'Jakobsgårdarna', 'Kvarnsveden', 'Hagalund', 'Vad', 'Smedjebacken', 'Stora Tuna'] },
+  sodertalje: { name: 'Södertälje', count: 487, desc: 'Sök BRF:er i Södertälje med org.nr och styrelseinfo. 487 bostadsrättsföreningar i Stockholms mest industririka grannstad.', areas: ['Centrum', 'Ronna', 'Fornhöjden', 'Geneta', 'Hovsö', 'Pershagen', 'Järna', 'Enhörna'] },
+  kalmar: { name: 'Kalmar', count: 378, desc: 'Hitta BRF:er i Kalmar vid Kalmarsund. 378 bostadsrättsföreningar i Smålands historiska residensstad.', areas: ['Centrum', 'Oxhagen', 'Norrliden', 'Söder', 'Berga', 'Fredriksskans', 'Ljungbyholm', 'Trekanten'] },
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

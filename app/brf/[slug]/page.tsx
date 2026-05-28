@@ -2,6 +2,9 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getBRFBySlug, formatOrgnr, bildadAr, avgift, parseBvData, slugify } from '@/lib/supabase'
+import { getEnergiByOrgnr } from '@/lib/energi'
+import { EnergiFakta, EnergiEjRegistrerad } from '@/components/EnergiFakta'
+import EnergiLeadCTA from '@/components/EnergiLeadCTA'
 import StickyClaimBar from '@/components/StickyClaimBar'
 
 function toTitleCase(str: string): string {
@@ -27,6 +30,7 @@ export default async function BRFPage({ params }: Props) {
   const brf = await getBRFBySlug(slug)
   if (!brf) notFound()
 
+  const energi = await getEnergiByOrgnr(brf.orgnr)
   const fee = avgift(brf)
   const year = bildadAr(brf.startdatum)
   const orgnr = formatOrgnr(brf.orgnr)
@@ -156,6 +160,12 @@ export default async function BRFPage({ params }: Props) {
                 )}
               </div>
             )}
+
+            {/* Energideklaration */}
+            {energi ? <EnergiFakta d={energi} /> : <EnergiEjRegistrerad />}
+
+            {/* Lead-CTA: energiåtgärder */}
+            <EnergiLeadCTA brfNamn={displayName} orgnr={brf.orgnr} kommun={brf.kommun} energiklass={energi?.energiklass} kalla="brf-sida" />
 
             {/* FAQ */}
             <div style={card} itemScope itemType="https://schema.org/FAQPage">

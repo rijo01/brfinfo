@@ -17,7 +17,7 @@ export default function Footer() {
             { title: 'Hitta BRF', links: [{ href: '/sok', label: 'Sök BRF' }, { href: '/stad/stockholm', label: 'Stockholm' }, { href: '/stad/goteborg', label: 'Göteborg' }, { href: '/stad/malmo', label: 'Malmö' }] },
             { title: 'För företag', links: [{ href: '/claima', label: 'Claima BRF' }, { href: '/forvaltare-partner', label: 'Bli partner' }, { href: '/forvaltare', label: 'Alla förvaltare' }] },
             { title: 'Om oss', links: [{ href: '/om', label: 'Om BRFinfo' }, { href: '/integritet', label: 'Integritetspolicy' }, { href: '/kontakt', label: 'Kontakt' }] },
-            { title: 'Resurser', links: [{ href: 'https://www.infofinder.se', label: 'Hitta företag på InfoFinder', external: true }] },
+            { title: 'Resurser', links: [{ href: '/energideklaration', label: 'Energideklaration' }, { href: '/energiklass/stockholm', label: 'Energiklass Stockholm' }, { href: 'https://www.infofinder.se', label: 'Hitta företag på InfoFinder', external: true }] },
           ].map(col => (
             <div key={col.title}>
               <h4 style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 14 }}>{col.title}</h4>

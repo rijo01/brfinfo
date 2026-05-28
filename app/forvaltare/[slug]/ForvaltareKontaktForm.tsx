@@ -10,22 +10,18 @@ export default function ForvaltareKontaktForm({ forvaltareName }: { forvaltareNa
     e.preventDefault()
     setLoading(true)
     try {
-      const res = await fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({
-          access_key: '8cef0758-0330-4784-9b12-ada44eb712b6',
-          subject: `Förvaltare-kontakt: ${forvaltareName}`,
-          from_name: 'BRFinfo Förvaltare-formulär',
-          forvaltare: forvaltareName,
-          namn: form.namn,
-          email: form.email,
-          telefon: form.telefon,
-          meddelande: form.meddelande,
-        }),
-      })
+      const formData = new FormData()
+      formData.append('access_key', '8cef0758-0330-4784-9b12-ada44eb712b6')
+      formData.append('subject', `Förvaltare-kontakt: ${forvaltareName}`)
+      formData.append('from_name', 'BRFinfo Förvaltare-formulär')
+      formData.append('forvaltare', forvaltareName)
+      formData.append('namn', form.namn)
+      formData.append('email', form.email)
+      formData.append('telefon', form.telefon)
+      formData.append('meddelande', form.meddelande)
+      const res = await fetch('https://api.web3forms.com/submit', { method: 'POST', body: formData })
       const data = await res.json().catch(() => ({}))
-      if (!res.ok || !data.success) throw new Error(data.message || 'Något gick fel')
+      if (!data.success) throw new Error(data.message || 'Något gick fel')
       setSent(true)
     } catch { alert('Något gick fel, försök igen.') }
     finally { setLoading(false) }

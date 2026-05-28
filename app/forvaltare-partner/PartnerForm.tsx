@@ -25,26 +25,19 @@ export default function PartnerForm({ defaultPackage = 'partner' }: { defaultPac
     setLoading(true)
     setErr(null)
     try {
-      const res = await fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({
-          access_key: '8cef0758-0330-4784-9b12-ada44eb712b6',
-          subject: `Ny partnerförfrågan: ${form.foretag}`,
-          from_name: 'BRFinfo Partner-formulär',
-          foretag: form.foretag,
-          namn: form.namn,
-          email: form.email,
-          telefon: form.telefon,
-          paket: form.paket,
-          meddelande: form.meddelande,
-        }),
-      })
+      const formData = new FormData()
+      formData.append('access_key', '8cef0758-0330-4784-9b12-ada44eb712b6')
+      formData.append('subject', `Ny partnerförfrågan: ${form.foretag}`)
+      formData.append('from_name', 'BRFinfo Partner-formulär')
+      formData.append('foretag', form.foretag)
+      formData.append('namn', form.namn)
+      formData.append('email', form.email)
+      formData.append('telefon', form.telefon)
+      formData.append('paket', form.paket)
+      formData.append('meddelande', form.meddelande)
+      const res = await fetch('https://api.web3forms.com/submit', { method: 'POST', body: formData })
       const data = await res.json().catch(() => ({}))
-      if (!res.ok || !data.success) throw new Error(data.message || 'Något gick fel')
+      if (!data.success) throw new Error(data.message || 'Något gick fel')
       setSent(true)
     } catch (e: any) {
       setErr('Kunde inte skicka. Försök igen eller mejla info@brfinfo.se')

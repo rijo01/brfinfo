@@ -10,23 +10,19 @@ export default function ClaimaForm() {
     e.preventDefault()
     setLoading(true)
     try {
-      const res = await fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({
-          access_key: '8cef0758-0330-4784-9b12-ada44eb712b6',
-          subject: `Claima-ansökan: ${form.brfNamn}`,
-          from_name: 'BRFinfo Claima-formulär',
-          brf: form.brfNamn,
-          orgnr: form.orgnr,
-          namn: form.namn,
-          roll: form.roll,
-          email: form.email,
-          telefon: form.telefon,
-        }),
-      })
+      const formData = new FormData()
+      formData.append('access_key', '8cef0758-0330-4784-9b12-ada44eb712b6')
+      formData.append('subject', `Claima-ansökan: ${form.brfNamn}`)
+      formData.append('from_name', 'BRFinfo Claima-formulär')
+      formData.append('brf', form.brfNamn)
+      formData.append('orgnr', form.orgnr)
+      formData.append('namn', form.namn)
+      formData.append('roll', form.roll)
+      formData.append('email', form.email)
+      formData.append('telefon', form.telefon)
+      const res = await fetch('https://api.web3forms.com/submit', { method: 'POST', body: formData })
       const data = await res.json().catch(() => ({}))
-      if (!res.ok || !data.success) throw new Error(data.message || 'Något gick fel')
+      if (!data.success) throw new Error(data.message || 'Något gick fel')
       setSent(true)
     } catch { alert('Något gick fel, försök igen.') }
     finally { setLoading(false) }

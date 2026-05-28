@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   description: 'Hitta styrelseinfo, avgifter och kontakt för alla 26 795 BRF:er i Sverige. Data från Bolagsverket.',
   icons: { icon: '/favicon.svg' },
   robots: { index: true, follow: true },
+  other: {
+    'google-adsense-account': 'ca-pub-4694490733358572',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

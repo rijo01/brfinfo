@@ -70,7 +70,7 @@ export default async function ForvaltarePage() {
             Bli partner på BRFinfo.se och nå tusentals styrelser. Kontaktuppgifter, logotyp och direktlänk till era BRF:er.
           </p>
           <Link href="/forvaltare/bli-partner" style={{ display: 'inline-block', background: '#C9932A', color: '#0F1F2D', padding: '12px 28px', borderRadius: 8, fontSize: 15, fontWeight: 500, textDecoration: 'none' }}>
-            Bli partner — från 299 kr/mån
+            Bli partner — från 490 kr/mån
           </Link>
         </div>
       </div>

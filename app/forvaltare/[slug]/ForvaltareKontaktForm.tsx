@@ -10,11 +10,22 @@ export default function ForvaltareKontaktForm({ forvaltareName }: { forvaltareNa
     e.preventDefault()
     setLoading(true)
     try {
-      await fetch('/api/forvaltare-kontakt', {
+      const res = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, forvaltare: forvaltareName }),
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          access_key: '8cef0758-0330-4784-9b12-ada44eb712b6',
+          subject: `Förvaltare-kontakt: ${forvaltareName}`,
+          from_name: 'BRFinfo Förvaltare-formulär',
+          forvaltare: forvaltareName,
+          namn: form.namn,
+          email: form.email,
+          telefon: form.telefon,
+          meddelande: form.meddelande,
+        }),
       })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok || !data.success) throw new Error(data.message || 'Något gick fel')
       setSent(true)
     } catch { alert('Något gick fel, försök igen.') }
     finally { setLoading(false) }
@@ -52,7 +63,7 @@ export default function ForvaltareKontaktForm({ forvaltareName }: { forvaltareNa
         </button>
       </div>
       <p style={{ fontSize: 11, color: '#8A9BAB', marginTop: 8, textAlign: 'center' }}>
-        Priser: 299 kr/mån (bas), 590 kr/mån (standard), 990 kr/mån (premium)
+        Priser: 490 kr/mån (bas), 990 kr/mån (partner), 2 490 kr/mån (premium)
       </p>
     </form>
   )

@@ -119,7 +119,7 @@ export default async function ForvaltareDetailPage({ params }: Props) {
               </p>
               <div style={{ fontSize: 13, color: '#6A8090', marginBottom: 4 }}>Partnerskap från</div>
               <div style={{ fontSize: 28, fontFamily: 'Fraunces, Georgia, serif', fontWeight: 400, color: '#0F1F2D', marginBottom: 16 }}>
-                299 <span style={{ fontSize: 14, color: '#6A8090' }}>kr/mån</span>
+                490 <span style={{ fontSize: 14, color: '#6A8090' }}>kr/mån</span>
               </div>
               <ul style={{ fontSize: 13, color: '#4A6070', lineHeight: 2, paddingLeft: 16, marginBottom: 16 }}>
                 <li>Verifierad profil med logotyp</li>

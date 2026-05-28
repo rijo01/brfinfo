@@ -21,14 +21,14 @@ export default function Nav() {
         </Link>
 
         {/* Links */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+        <div className="site-nav-links" style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
           {[
-            { href: '/sok', label: 'Sök BRF' },
-            { href: '/stad/stockholm', label: 'Stockholm' },
-            { href: '/stad/goteborg', label: 'Göteborg' },
-            { href: '/stad/malmo', label: 'Malmö' },
+            { href: '/sok', label: 'Sök BRF', city: false },
+            { href: '/stad/stockholm', label: 'Stockholm', city: true },
+            { href: '/stad/goteborg', label: 'Göteborg', city: true },
+            { href: '/stad/malmo', label: 'Malmö', city: true },
           ].map(l => (
-            <Link key={l.href} href={l.href} style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: 14 }}>
+            <Link key={l.href} href={l.href} className={l.city ? 'site-nav-city' : undefined} style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none', fontSize: 14 }}>
               {l.label}
             </Link>
           ))}

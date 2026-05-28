@@ -22,3 +22,15 @@ body {
 }
 
 .font-serif { font-family: 'Fraunces', Georgia, serif; }
+
+/* Responsive Nav + Footer (override inline styles on small screens) */
+@media (max-width: 560px) {
+  .site-nav-links { gap: 14px !important; }
+  .site-nav-city { display: none !important; }
+}
+@media (max-width: 640px) {
+  .site-footer-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 28px 24px !important;
+  }
+}

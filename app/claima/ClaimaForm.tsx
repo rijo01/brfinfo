@@ -10,7 +10,23 @@ export default function ClaimaForm() {
     e.preventDefault()
     setLoading(true)
     try {
-      await fetch('/api/claima', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          access_key: '8cef0758-0330-4784-9b12-ada44eb712b6',
+          subject: `Claima-ansökan: ${form.brfNamn}`,
+          from_name: 'BRFinfo Claima-formulär',
+          brf: form.brfNamn,
+          orgnr: form.orgnr,
+          namn: form.namn,
+          roll: form.roll,
+          email: form.email,
+          telefon: form.telefon,
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok || !data.success) throw new Error(data.message || 'Något gick fel')
       setSent(true)
     } catch { alert('Något gick fel, försök igen.') }
     finally { setLoading(false) }

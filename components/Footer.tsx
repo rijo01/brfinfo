@@ -4,7 +4,7 @@ export default function Footer() {
   return (
     <footer style={{ background: '#0F1F2D', padding: '48px 24px 32px', marginTop: 80 }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', gap: 40, marginBottom: 40 }}>
+        <div className="site-footer-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', gap: 40, marginBottom: 40 }}>
           <div>
             <div style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 20, color: 'white', marginBottom: 12 }}>
               BRF<span style={{ color: '#1B7C6E' }}>info</span>

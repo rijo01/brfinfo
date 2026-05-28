@@ -111,7 +111,7 @@ export default async function HomePage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {[
               { name: 'Grundlisting', desc: 'Synlighet i sökresultat', price: 'Gratis', featured: false },
-              { name: 'BRF Premium', desc: 'Verifierad profil + leads', price: '299 kr/mån', featured: true },
+              { name: 'BRF Premium', desc: 'Verifierad profil + leads', price: '490 kr/mån', featured: true },
               { name: 'Förvaltarpartner', desc: 'Exklusiva BRF-leads', price: '990 kr/mån', featured: false },
             ].map(t => (
               <div key={t.name} style={{ background: t.featured ? 'rgba(201,147,42,0.12)' : 'rgba(255,255,255,0.06)', border: `1px solid ${t.featured ? 'rgba(201,147,42,0.3)' : 'rgba(255,255,255,0.1)'}`, borderRadius: 10, padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

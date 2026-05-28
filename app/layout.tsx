@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
-import Script from 'next/script'
 import './globals.css'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 import ScrollToTop from '@/components/ScrollToTop'
 import { GoogleAnalytics } from '@/components/GoogleAnalytics'
+import CookieBanner from '@/components/CookieBanner'
+import AdSenseScript from '@/components/AdSenseScript'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://brfinfo.se'),
@@ -24,19 +25,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4694490733358572"
-          strategy="afterInteractive"
-          crossOrigin="anonymous"
-        />
       </head>
       <body>
         <GoogleAnalytics />
+        <AdSenseScript />
         <Nav />
         <ScrollToTop />
         <main>{children}</main>
         <Footer />
+        <CookieBanner />
       </body>
     </html>
   )

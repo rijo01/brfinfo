@@ -96,7 +96,7 @@ export default async function HomePage() {
         </div>
 
         {/* FOR BUSINESS */}
-        <div style={{ background: '#0F1F2D', borderRadius: 16, padding: '40px 48px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, alignItems: 'center', marginBottom: 60 }}>
+        <div className="home-business-grid" style={{ background: '#0F1F2D', borderRadius: 16, padding: '40px 48px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, alignItems: 'center', marginBottom: 60 }}>
           <div>
             <h2 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 28, fontWeight: 300, color: 'white', letterSpacing: '-0.5px', marginBottom: 12, lineHeight: 1.2 }}>
               Är du <em style={{ color: '#E8B84B', fontStyle: 'normal' }}>förvaltningsbolag</em> eller hantverkare?

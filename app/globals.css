@@ -34,3 +34,10 @@ body {
     gap: 28px 24px !important;
   }
 }
+
+/* StickyClaimBar: full text on desktop, short text on small screens */
+.claimbar-short { display: none; }
+@media (max-width: 560px) {
+  .claimbar-full { display: none; }
+  .claimbar-short { display: inline; }
+}

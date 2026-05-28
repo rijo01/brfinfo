@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getBRFBySlug, formatOrgnr, bildadAr, avgift, parseBvData, slugify } from '@/lib/supabase'
+import StickyClaimBar from '@/components/StickyClaimBar'
 
 function toTitleCase(str: string): string {
   return str.toLowerCase().replace(/(?:^|\s|[-/])\S/g, (c) => c.toUpperCase())
@@ -196,6 +197,8 @@ export default async function BRFPage({ params }: Props) {
           </div>
         </div>
       </div>
+
+      <StickyClaimBar brfNamn={brf.namn} />
     </>
   )
 }

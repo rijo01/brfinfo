@@ -11,7 +11,7 @@ export default function ClaimaForm() {
     setLoading(true)
     try {
       const formData = new FormData()
-      formData.append('access_key', '8cef0758-0330-4784-9b12-ada44eb712b6')
+      formData.append('access_key', '8007467a-7cc3-47b6-828a-72a6c603e5fb')
       formData.append('subject', `Claima-ansökan: ${form.brfNamn}`)
       formData.append('from_name', 'BRFinfo Claima-formulär')
       formData.append('brf', form.brfNamn)

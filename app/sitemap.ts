@@ -15,7 +15,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/energiklass/stockholm`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
     { url: `${base}/kontakt`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
     { url: `${base}/integritet`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
-    ...['stockholm','goteborg','malmo','uppsala','linkoping','orebro','vasteras','helsingborg','norrkoping','jonkoping','umea','lund'].map(c => ({
+    // Måste matcha de kuraterade städerna i app/stad/[city]/page.tsx (META) — annars tunna/saknade sidor.
+    ...['stockholm','goteborg','malmo','uppsala','linkoping','orebro','vasteras','helsingborg','norrkoping','jonkoping','gavle','boras','eskilstuna','karlstad','lulea','sundsvall','trollhattan','halmstad','ostersund','falun','vaxjo','umea','lund','borlange','sodertalje','kalmar'].map(c => ({
       url: `${base}/stad/${c}`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.8,
     })),
   ]

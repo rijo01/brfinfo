@@ -4,6 +4,7 @@ import ClaimaForm from './ClaimaForm'
 export const metadata: Metadata = {
   title: 'Claima din BRF — Uppdatera föreningsinformation | BRFinfo.se',
   description: 'Är du styrelseledamot? Claima er sida på BRFinfo och håll kontaktuppgifter uppdaterade.',
+  alternates: { canonical: 'https://brfinfo.se/claima' },
 }
 
 export default function ClaimaPage() {

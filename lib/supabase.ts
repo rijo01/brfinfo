@@ -107,7 +107,7 @@ export function parseBvData(brf: BRF): BRF['bolagsverket_data'] {
   return brf.bolagsverket_data
 }
 
-function extractForvaltare(brf: BRF): string | null {
+export function extractForvaltare(brf: BRF): string | null {
   if (brf.forvaltare) return brf.forvaltare
   const bv = parseBvData(brf)
   const co = bv?.postadress_detaljer?.coAdress
@@ -117,7 +117,7 @@ function extractForvaltare(brf: BRF): string | null {
   return trimmed.replace(/^c\/o\s+/i, '').trim() || null
 }
 
-export async function getForvaltareList(): Promise<Forvaltare[]> {
+export async function getForvaltareList(minCount = 2): Promise<Forvaltare[]> {
   // Fetch all BRFs with bolagsverket_data to extract forvaltare from coAdress
   const allBrfs: BRF[] = []
   let offset = 0
@@ -142,7 +142,7 @@ export async function getForvaltareList(): Promise<Forvaltare[]> {
   }
 
   return Object.entries(counts)
-    .filter(([, count]) => count >= 2) // Only show forvaltare with 2+ BRFs
+    .filter(([, count]) => count >= minCount) // List view: 2+ BRFs; detail resolution: 1+ (avoid dead internlänkar)
     .map(([name, count]) => ({
       name,
       slug: slugify(name),
@@ -176,7 +176,9 @@ export async function getBRFsByForvaltare(forvaltareName: string, limit = 500): 
 }
 
 export async function getForvaltareBySlug(slug: string): Promise<{ name: string; brfs: BRF[] } | null> {
-  const list = await getForvaltareList()
+  // minCount=1: a förvaltare-detalj kan nås via internlänk från en enskild BRF-sida
+  // även om förvaltaren bara har 1 BRF. Annars blir varje sådan länk en 404.
+  const list = await getForvaltareList(1)
   const match = list.find(f => f.slug === slug)
   if (!match) return null
 

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getBRFBySlug, formatOrgnr, bildadAr, avgift, parseBvData, slugify } from '@/lib/supabase'
+import { getBRFBySlug, formatOrgnr, bildadAr, avgift, parseBvData, slugify, extractForvaltare } from '@/lib/supabase'
 import { getEnergiByOrgnr } from '@/lib/energi'
 import { EnergiFakta, EnergiEjRegistrerad } from '@/components/EnergiFakta'
 import EnergiLeadCTA from '@/components/EnergiLeadCTA'
@@ -36,7 +36,9 @@ export default async function BRFPage({ params }: Props) {
   const orgnr = formatOrgnr(brf.orgnr)
 
   const bvData = parseBvData(brf)
-  const forvaltare = bvData?.postadress_detaljer?.coAdress?.trim().replace(/^c\/o\s+/i, '').trim() || null
+  // Använd samma extraktion som förvaltarlistan/-resolvern, annars länkar vi till
+  // /forvaltare/<slug> som inte kan resolvas (personnamn etc.) → 404.
+  const forvaltare = extractForvaltare(brf)
   const displayName = toTitleCase(brf.namn)
   const card = { background: 'white', border: '1px solid rgba(15,31,45,0.09)', borderRadius: 12, padding: '24px 28px', marginBottom: 16 }
   const cardTitle = { fontFamily: 'Fraunces, Georgia, serif', fontSize: 18, fontWeight: 400, color: '#0F1F2D', marginBottom: 16, letterSpacing: '-0.3px' } as React.CSSProperties

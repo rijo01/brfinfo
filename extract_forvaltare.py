@@ -14,7 +14,7 @@ from urllib.request import Request, urlopen
 SUPABASE_URL = "https://mtozvblwsahzijmpdmfs.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10b3p2Ymx3c2FoemlqbXBkbWZzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjI4NjM1OCwiZXhwIjoyMDg3ODYyMzU4fQ.7SPPGBb4NMP0I8RIqMyAcN10HOIn-Gj9QGWvJ3j24b0"
 
-BATCH_SIZE = 1000
+BATCH_SIZE = 500
 
 logging.basicConfig(
     level=logging.INFO,
@@ -90,27 +90,58 @@ def slugify(name):
     return s
 
 
-def fetch_brfs_with_coadress():
-    """Fetch all BRFs that have bolagsverket_data with postadress_detaljer."""
-    all_brfs = []
+def fetch_and_process_brfs(update_callback):
+    """Fetch BRFs in pages of BATCH_SIZE rows and process each page immediately.
+
+    bolagsverket_data is stored as TEXT (not JSONB), so we must fetch it and
+    parse in Python. Pagination keeps each request small enough to avoid 500s.
+    """
     offset = 0
+    total_fetched = 0
+    updated = 0
+    skipped = 0
+    forvaltare_counts = {}
+
     while True:
         url = (
             f"{SUPABASE_URL}/rest/v1/foretag"
-            f"?select=orgnr,namn,bolagsverket_data"
+            f"?select=orgnr,bolagsverket_data"
             f"&juridisk_form=eq.Bostadsr%C3%A4ttsf%C3%B6reningar"
             f"&bolagsverket_data=not.is.null"
             f"&order=orgnr"
             f"&limit={BATCH_SIZE}&offset={offset}"
         )
-        data = http_request(url, headers=supabase_headers())
+        data = http_request(url, headers=supabase_headers(), timeout=120)
         if not data:
             break
-        all_brfs.extend(data)
+        total_fetched += len(data)
+        log.info(f"Fetched page at offset {offset}: {len(data)} rows (total: {total_fetched})")
+
+        for brf in data:
+            bv_data = brf.get("bolagsverket_data")
+            if isinstance(bv_data, str):
+                try:
+                    bv_data = json.loads(bv_data)
+                except Exception:
+                    skipped += 1
+                    continue
+            co = extract_coadress(bv_data)
+            if co:
+                try:
+                    update_forvaltare(brf["orgnr"], co)
+                    updated += 1
+                    forvaltare_counts[co] = forvaltare_counts.get(co, 0) + 1
+                except Exception as e:
+                    log.error(f"Error updating {brf['orgnr']}: {e}")
+            else:
+                skipped += 1
+
+        log.info(f"  Running totals: Updated={updated} Skipped={skipped}")
         offset += len(data)
         if len(data) < BATCH_SIZE:
             break
-    return all_brfs
+
+    return total_fetched, updated, skipped, forvaltare_counts
 
 
 def extract_coadress(bv_data):
@@ -158,40 +189,11 @@ def main():
         log.info("This script is an optimization to speed up queries.")
         return
 
-    # Step 2: Fetch all BRFs with bolagsverket_data
-    log.info("Fetching BRFs with bolagsverket_data...")
-    brfs = fetch_brfs_with_coadress()
-    log.info(f"Found {len(brfs)} BRFs with bolagsverket_data")
+    # Step 2: Fetch and process BRFs page by page
+    log.info("Fetching and processing BRFs with bolagsverket_data...")
+    total_fetched, updated, skipped, forvaltare_counts = fetch_and_process_brfs(update_forvaltare)
 
-    # Step 3: Extract coAdress and update
-    updated = 0
-    skipped = 0
-    forvaltare_counts = {}
-
-    for i, brf in enumerate(brfs):
-        bv_data = brf.get("bolagsverket_data")
-        if isinstance(bv_data, str):
-            try:
-                bv_data = json.loads(bv_data)
-            except Exception:
-                skipped += 1
-                continue
-
-        co = extract_coadress(bv_data)
-        if co:
-            try:
-                update_forvaltare(brf["orgnr"], co)
-                updated += 1
-                forvaltare_counts[co] = forvaltare_counts.get(co, 0) + 1
-            except Exception as e:
-                log.error(f"Error updating {brf['orgnr']}: {e}")
-        else:
-            skipped += 1
-
-        if (i + 1) % 500 == 0:
-            log.info(f"Progress: {i+1}/{len(brfs)} | Updated={updated} Skipped={skipped}")
-
-    log.info(f"Done! Updated={updated} Skipped={skipped}")
+    log.info(f"Done! Total={total_fetched} Updated={updated} Skipped={skipped}")
     log.info(f"Found {len(forvaltare_counts)} unique förvaltare")
 
     # Show top 20

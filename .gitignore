@@ -7,3 +7,12 @@ node_modules/
 __pycache__/
 .DS_Store
 .vercel/
+.vercel
+.env*
+
+# Genererade artefakter (regenereras av styrelseguide/build_pdf.py)
+styrelseguide/preview/
+styrelseguide/output/
+
+# Next.js-genererad typfil
+next-env.d.ts

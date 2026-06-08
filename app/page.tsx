@@ -95,6 +95,22 @@ export default async function HomePage() {
           ))}
         </div>
 
+        {/* STYRELSEGUIDE */}
+        <div style={{ background: '#F5F1E8', border: '1px solid rgba(201,147,42,0.25)', borderRadius: 16, padding: '40px 48px', marginBottom: 60, textAlign: 'center' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(201,147,42,0.14)', border: '1px solid rgba(201,147,42,0.3)', padding: '5px 14px', borderRadius: 20, fontSize: 12, color: '#9A6E1E', fontWeight: 500, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: 18 }}>
+            För styrelsen
+          </div>
+          <h2 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 28, fontWeight: 300, color: '#0F1F2D', letterSpacing: '-0.5px', marginBottom: 12, lineHeight: 1.2 }}>
+            Sitter du i en <em style={{ color: '#C9932A', fontStyle: 'normal' }}>BRF-styrelse?</em>
+          </h2>
+          <p style={{ fontSize: 15, color: '#4A6070', lineHeight: 1.7, maxWidth: 560, margin: '0 auto 24px' }}>
+            Handboken <em style={{ fontStyle: 'italic' }}>Den välskötta bostadsrättsföreningen</em> ger styrelsen struktur för lägre kostnader, tryggare beslut och högre fastighetsvärde — 20 kapitel, checklistor och mallar.
+          </p>
+          <Link href="/styrelseguide" style={{ display: 'inline-block', background: '#C9932A', color: '#0F1F2D', padding: '11px 24px', borderRadius: 8, fontSize: 14, fontWeight: 500, textDecoration: 'none' }}>
+            Läs mer om handboken →
+          </Link>
+        </div>
+
         {/* FOR BUSINESS */}
         <div className="home-business-grid" style={{ background: '#0F1F2D', borderRadius: 16, padding: '40px 48px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, alignItems: 'center', marginBottom: 60 }}>
           <div>

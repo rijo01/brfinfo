@@ -24,6 +24,7 @@ export default function Nav() {
         <div className="site-nav-links" style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
           {[
             { href: '/sok', label: 'Sök BRF', city: false },
+            { href: '/styrelseguide', label: 'Styrelseguide', city: false },
             { href: '/stad/stockholm', label: 'Stockholm', city: true },
             { href: '/stad/goteborg', label: 'Göteborg', city: true },
             { href: '/stad/malmo', label: 'Malmö', city: true },

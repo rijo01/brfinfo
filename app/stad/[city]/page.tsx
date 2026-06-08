@@ -1,38 +1,44 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { getBRFsByCity } from '@/lib/supabase'
+import { getBRFsByCity, getBRFCountByCity } from '@/lib/supabase'
 import BRFCard from '@/components/BRFCard'
 import SearchBox from '@/components/SearchBox'
 
 type Props = { params: Promise<{ city: string }> }
 
-const META: Record<string, { name: string; count: number; desc: string; areas: string[] }> = {
-  stockholm: { name: 'Stockholm', count: 8421, desc: 'Hitta alla BRF:er i Stockholm med styrelseinfo och avgifter.', areas: ['Södermalm', 'Östermalm', 'Vasastan', 'Kungsholmen', 'Lidingö', 'Nacka', 'Solna', 'Sundbyberg'] },
-  goteborg: { name: 'Göteborg', count: 4218, desc: 'BRF:er i Göteborg — jämför avgifter och hitta styrelseinfo.', areas: ['Hisingen', 'Majorna', 'Linnéstaden', 'Centrum', 'Örgryte', 'Angered', 'Askim', 'Mölndal'] },
-  malmo: { name: 'Malmö', count: 2876, desc: 'Sök bland BRF:er i Malmö med styrelseinfo och kontakt.', areas: ['Möllevången', 'Limhamn', 'Husie', 'Centrum', 'Hyllie', 'Rosengård', 'Oxie', 'Kirseberg'] },
-  uppsala: { name: 'Uppsala', count: 1543, desc: 'BRF:er i Uppsala med komplett registerinfo.', areas: ['Fålhagen', 'Luthagen', 'Kungsängen', 'Centrum', 'Eriksberg', 'Gottsunda', 'Sävja', 'Bälinge'] },
-  linkoping: { name: 'Linköping', count: 987, desc: 'Sök BRF:er i Linköping med styrelseinfo.', areas: ['Centrum', 'Ryd', 'Ekholmen', 'Lambohov', 'Gottfridsberg', 'Skäggetorp', 'Åby', 'Vikingstad'] },
-  orebro: { name: 'Örebro', count: 742, desc: 'Hitta BRF:er i Örebro med kontakt och styrelseinfo.', areas: ['Centrum', 'Brickebacken', 'Varberga', 'Adolfsberg', 'Mellringe', 'Hovsta', 'Längbro', 'Sörbyängen'] },
-  vasteras: { name: 'Västerås', count: 698, desc: 'BRF:er i Västerås — 698 registrerade föreningar.', areas: ['Centrum', 'Hamre', 'Skallberget', 'Viksäng', 'Bäckby', 'Rönnby', 'Tillberga', 'Irsta'] },
-  helsingborg: { name: 'Helsingborg', count: 621, desc: 'BRF:er i Helsingborg med org.nr och styrelseinfo.', areas: ['Centrum', 'Drottninghög', 'Fredriksdal', 'Olympia', 'Råå', 'Rydebäck', 'Mörarp', 'Allerum'] },
-  norrkoping: { name: 'Norrköping', count: 544, desc: 'Sök BRF:er i Norrköping med styrelseinfo.', areas: ['Centrum', 'Ljura', 'Hageby', 'Vilbergen', 'Navestad', 'Åby', 'Kvillinge', 'Kimstad'] },
-  jonkoping: { name: 'Jönköping', count: 487, desc: 'BRF:er i Jönköping — register med styrelseinfo.', areas: ['Centrum', 'Huskvarna', 'Råslätt', 'Österängen', 'Barnarp', 'Sandseryd', 'Norrahammar', 'Bankeryd'] },
-  gavle: { name: 'Gävle', count: 389, desc: 'Hitta BRF:er i Gävle med styrelseinfo, avgifter och kontaktuppgifter. Register över 389 bostadsrättsföreningar.', areas: ['Centrum', 'Bomhus', 'Sätra', 'Stigslund', 'Hemlingby', 'Strömsbro', 'Hille', 'Valbo'] },
-  boras: { name: 'Borås', count: 341, desc: 'BRF:er i Borås — jämför avgifter och styrelseinfo för 341 bostadsrättsföreningar.', areas: ['Centrum', 'Hässleholmen', 'Norrby', 'Göta', 'Brämhult', 'Sandared', 'Dalsjöfors', 'Fristad'] },
-  eskilstuna: { name: 'Eskilstuna', count: 298, desc: 'Sök bland BRF:er i Eskilstuna med org.nr, styrelseinfo och avgiftsuppgifter.', areas: ['Centrum', 'Fröslunda', 'Skiftinge', 'Råbergstorp', 'Hageby', 'Lagersberg', 'Torshälla', 'Kjula'] },
-  karlstad: { name: 'Karlstad', count: 412, desc: 'Hitta BRF:er i Karlstad vid Klarälven. Register med styrelseinfo och avgifter för 412 bostadsrättsföreningar.', areas: ['Centrum', 'Norrstrand', 'Sydöstra', 'Färjestad', 'Kronoparken', 'Rud', 'Viken', 'Grums'] },
-  lulea: { name: 'Luleå', count: 267, desc: 'BRF:er i Luleå – styrelseinfo och avgifter för 267 bostadsrättsföreningar i Norrbotten.', areas: ['Centrum', 'Björkskatan', 'Bergnäset', 'Råneå', 'Gammelstad', 'Hertsön', 'Kronan', 'Porsön'] },
-  sundsvall: { name: 'Sundsvall', count: 334, desc: 'Hitta BRF:er i Sundsvall med styrelseinfo och kontaktuppgifter. 334 föreningar i Medelpads residensstad.', areas: ['Centrum', 'Sidsjö', 'Norrmalm', 'Bosvedjan', 'Kovland', 'Timrå', 'Skönsmon', 'Alnö'] },
-  trollhattan: { name: 'Trollhättan', count: 287, desc: 'Sök BRF:er i Trollhättan med styrelseinfo och avgifter. 287 bostadsrättsföreningar i Västra Götaland.', areas: ['Centrum', 'Lextorp', 'Sjuntorp', 'Eriksborg', 'Vänersborg', 'Väne-Ryr', 'Väne-Åsaka', 'Frändefors'] },
-  halmstad: { name: 'Halmstad', count: 312, desc: 'Hitta BRF:er i Halmstad med kontakt och styrelseinfo. 312 föreningar i Hallands residensstad.', areas: ['Centrum', 'Söder', 'Frennarp', 'Oskarström', 'Harplinge', 'Getinge', 'Simlångsdalen', 'Kvibille'] },
-  ostersund: { name: 'Östersund', count: 224, desc: 'Hitta BRF:er i Östersund med styrelseinfo och avgifter. 224 bostadsrättsföreningar vid Storsjön.', areas: ['Centrum', 'Odenslund', 'Hornsberg', 'Lugnvik', 'Fältjägaren', 'Odensala', 'Lit', 'Brunflo'] },
-  falun: { name: 'Falun', count: 198, desc: 'BRF:er i Falun – 198 föreningar i Dalarnas residensstad. Styrelseinfo och avgifter.', areas: ['Centrum', 'Hälsinggården', 'Hosjö', 'Kvarnsveden', 'Grycksbo', 'Vika', 'Järna', 'Enviken'] },
-  vaxjo: { name: 'Växjö', count: 243, desc: 'Sök bland BRF:er i Växjö med org.nr och styrelseinfo. 243 bostadsrättsföreningar i Kronoberg.', areas: ['Centrum', 'Araby', 'Dalbo', 'Öjaby', 'Toftaholm', 'Lammhult', 'Braås', 'Rottne'] },
-  umea: { name: 'Umeå', count: 412, desc: 'Hitta BRF:er i Umeå med komplett registerdata.', areas: ['Centrum', 'Ålidhem', 'Haga', 'Mariehem', 'Tomtebo', 'Carlshem', 'Teg', 'Ersboda'] },
-  lund: { name: 'Lund', count: 389, desc: 'BRF:er i Lund med styrelseinfo och avgifter.', areas: ['Centrum', 'Norra Fäladen', 'Klostergården', 'Kobjer', 'Linero', 'Väster', 'Brunnshög', 'Stångby'] },
-  borlange: { name: 'Borlänge', count: 312, desc: 'Hitta BRF:er i Borlänge med styrelseinfo och avgifter. 312 bostadsrättsföreningar i Dalarnas industristjärna.', areas: ['Centrum', 'Tjärna Ängar', 'Jakobsgårdarna', 'Kvarnsveden', 'Hagalund', 'Vad', 'Smedjebacken', 'Stora Tuna'] },
-  sodertalje: { name: 'Södertälje', count: 487, desc: 'Sök BRF:er i Södertälje med org.nr och styrelseinfo. 487 bostadsrättsföreningar i Stockholms mest industririka grannstad.', areas: ['Centrum', 'Ronna', 'Fornhöjden', 'Geneta', 'Hovsö', 'Pershagen', 'Järna', 'Enhörna'] },
-  kalmar: { name: 'Kalmar', count: 378, desc: 'Hitta BRF:er i Kalmar vid Kalmarsund. 378 bostadsrättsföreningar i Smålands historiska residensstad.', areas: ['Centrum', 'Oxhagen', 'Norrliden', 'Söder', 'Berga', 'Fredriksskans', 'Ljungbyholm', 'Trekanten'] },
+// ISR: prerendera de kända städerna vid build (en count-query per stad), revalidera dagligen.
+export const revalidate = 86400
+export function generateStaticParams() {
+  return Object.keys(META).map(city => ({ city }))
+}
+
+const META: Record<string, { name: string; desc: string; areas: string[] }> = {
+  stockholm: { name: 'Stockholm', desc: 'Hitta alla BRF:er i Stockholm med styrelseinfo och kontaktuppgifter.', areas: ['Södermalm', 'Östermalm', 'Vasastan', 'Kungsholmen', 'Lidingö', 'Nacka', 'Solna', 'Sundbyberg'] },
+  goteborg: { name: 'Göteborg', desc: 'BRF:er i Göteborg — hitta styrelseinfo och kontaktuppgifter.', areas: ['Hisingen', 'Majorna', 'Linnéstaden', 'Centrum', 'Örgryte', 'Angered', 'Askim', 'Mölndal'] },
+  malmo: { name: 'Malmö', desc: 'Sök bland BRF:er i Malmö med styrelseinfo och kontakt.', areas: ['Möllevången', 'Limhamn', 'Husie', 'Centrum', 'Hyllie', 'Rosengård', 'Oxie', 'Kirseberg'] },
+  uppsala: { name: 'Uppsala', desc: 'BRF:er i Uppsala med komplett registerinfo.', areas: ['Fålhagen', 'Luthagen', 'Kungsängen', 'Centrum', 'Eriksberg', 'Gottsunda', 'Sävja', 'Bälinge'] },
+  linkoping: { name: 'Linköping', desc: 'Sök BRF:er i Linköping med styrelseinfo.', areas: ['Centrum', 'Ryd', 'Ekholmen', 'Lambohov', 'Gottfridsberg', 'Skäggetorp', 'Åby', 'Vikingstad'] },
+  orebro: { name: 'Örebro', desc: 'Hitta BRF:er i Örebro med kontakt och styrelseinfo.', areas: ['Centrum', 'Brickebacken', 'Varberga', 'Adolfsberg', 'Mellringe', 'Hovsta', 'Längbro', 'Sörbyängen'] },
+  vasteras: { name: 'Västerås', desc: 'BRF:er i Västerås med styrelseinfo och kontaktuppgifter.', areas: ['Centrum', 'Hamre', 'Skallberget', 'Viksäng', 'Bäckby', 'Rönnby', 'Tillberga', 'Irsta'] },
+  helsingborg: { name: 'Helsingborg', desc: 'BRF:er i Helsingborg med org.nr och styrelseinfo.', areas: ['Centrum', 'Drottninghög', 'Fredriksdal', 'Olympia', 'Råå', 'Rydebäck', 'Mörarp', 'Allerum'] },
+  norrkoping: { name: 'Norrköping', desc: 'Sök BRF:er i Norrköping med styrelseinfo.', areas: ['Centrum', 'Ljura', 'Hageby', 'Vilbergen', 'Navestad', 'Åby', 'Kvillinge', 'Kimstad'] },
+  jonkoping: { name: 'Jönköping', desc: 'BRF:er i Jönköping — register med styrelseinfo.', areas: ['Centrum', 'Huskvarna', 'Råslätt', 'Österängen', 'Barnarp', 'Sandseryd', 'Norrahammar', 'Bankeryd'] },
+  gavle: { name: 'Gävle', desc: 'Hitta BRF:er i Gävle med styrelseinfo och kontaktuppgifter.', areas: ['Centrum', 'Bomhus', 'Sätra', 'Stigslund', 'Hemlingby', 'Strömsbro', 'Hille', 'Valbo'] },
+  boras: { name: 'Borås', desc: 'BRF:er i Borås — hitta styrelseinfo och kontaktuppgifter.', areas: ['Centrum', 'Hässleholmen', 'Norrby', 'Göta', 'Brämhult', 'Sandared', 'Dalsjöfors', 'Fristad'] },
+  eskilstuna: { name: 'Eskilstuna', desc: 'Sök bland BRF:er i Eskilstuna med org.nr och styrelseinfo.', areas: ['Centrum', 'Fröslunda', 'Skiftinge', 'Råbergstorp', 'Hageby', 'Lagersberg', 'Torshälla', 'Kjula'] },
+  karlstad: { name: 'Karlstad', desc: 'Hitta BRF:er i Karlstad vid Klarälven. Register med styrelseinfo och kontaktuppgifter.', areas: ['Centrum', 'Norrstrand', 'Sydöstra', 'Färjestad', 'Kronoparken', 'Rud', 'Viken', 'Grums'] },
+  lulea: { name: 'Luleå', desc: 'BRF:er i Luleå – styrelseinfo och kontaktuppgifter i Norrbotten.', areas: ['Centrum', 'Björkskatan', 'Bergnäset', 'Råneå', 'Gammelstad', 'Hertsön', 'Kronan', 'Porsön'] },
+  sundsvall: { name: 'Sundsvall', desc: 'Hitta BRF:er i Sundsvall med styrelseinfo och kontaktuppgifter i Medelpads residensstad.', areas: ['Centrum', 'Sidsjö', 'Norrmalm', 'Bosvedjan', 'Kovland', 'Timrå', 'Skönsmon', 'Alnö'] },
+  trollhattan: { name: 'Trollhättan', desc: 'Sök BRF:er i Trollhättan med styrelseinfo i Västra Götaland.', areas: ['Centrum', 'Lextorp', 'Sjuntorp', 'Eriksborg', 'Vänersborg', 'Väne-Ryr', 'Väne-Åsaka', 'Frändefors'] },
+  halmstad: { name: 'Halmstad', desc: 'Hitta BRF:er i Halmstad med kontakt och styrelseinfo i Hallands residensstad.', areas: ['Centrum', 'Söder', 'Frennarp', 'Oskarström', 'Harplinge', 'Getinge', 'Simlångsdalen', 'Kvibille'] },
+  ostersund: { name: 'Östersund', desc: 'Hitta BRF:er i Östersund med styrelseinfo vid Storsjön.', areas: ['Centrum', 'Odenslund', 'Hornsberg', 'Lugnvik', 'Fältjägaren', 'Odensala', 'Lit', 'Brunflo'] },
+  falun: { name: 'Falun', desc: 'BRF:er i Falun i Dalarnas residensstad. Styrelseinfo och kontaktuppgifter.', areas: ['Centrum', 'Hälsinggården', 'Hosjö', 'Kvarnsveden', 'Grycksbo', 'Vika', 'Järna', 'Enviken'] },
+  vaxjo: { name: 'Växjö', desc: 'Sök bland BRF:er i Växjö med org.nr och styrelseinfo i Kronoberg.', areas: ['Centrum', 'Araby', 'Dalbo', 'Öjaby', 'Toftaholm', 'Lammhult', 'Braås', 'Rottne'] },
+  umea: { name: 'Umeå', desc: 'Hitta BRF:er i Umeå med komplett registerdata.', areas: ['Centrum', 'Ålidhem', 'Haga', 'Mariehem', 'Tomtebo', 'Carlshem', 'Teg', 'Ersboda'] },
+  lund: { name: 'Lund', desc: 'BRF:er i Lund med styrelseinfo och kontaktuppgifter.', areas: ['Centrum', 'Norra Fäladen', 'Klostergården', 'Kobjer', 'Linero', 'Väster', 'Brunnshög', 'Stångby'] },
+  borlange: { name: 'Borlänge', desc: 'Hitta BRF:er i Borlänge med styrelseinfo i Dalarnas industristad.', areas: ['Centrum', 'Tjärna Ängar', 'Jakobsgårdarna', 'Kvarnsveden', 'Hagalund', 'Vad', 'Smedjebacken', 'Stora Tuna'] },
+  sodertalje: { name: 'Södertälje', desc: 'Sök BRF:er i Södertälje med org.nr och styrelseinfo i Stockholms grannstad.', areas: ['Centrum', 'Ronna', 'Fornhöjden', 'Geneta', 'Hovsö', 'Pershagen', 'Järna', 'Enhörna'] },
+  kalmar: { name: 'Kalmar', desc: 'Hitta BRF:er i Kalmar vid Kalmarsund i Smålands historiska residensstad.', areas: ['Centrum', 'Oxhagen', 'Norrliden', 'Söder', 'Berga', 'Fredriksskans', 'Ljungbyholm', 'Trekanten'] },
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -40,7 +46,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const m = META[city]
   const name = m?.name ?? city
   return {
-    title: `BRF i ${name} — ${m?.count ?? ''} bostadsrättsföreningar | BRFinfo.se`,
+    title: `BRF i ${name} — bostadsrättsföreningar med styrelseinfo | BRFinfo.se`,
     description: m?.desc ?? `Hitta BRF:er i ${name} med styrelseinfo och kontaktuppgifter.`,
     alternates: { canonical: `https://brfinfo.se/stad/${city}` },
   }
@@ -51,6 +57,7 @@ export default async function CityPage({ params }: Props) {
   const meta = META[city]
   const cityName = meta?.name ?? city
   const brfs = await getBRFsByCity(cityName, 30)
+  const count = await getBRFCountByCity(cityName)
 
   return (
     <>
@@ -110,7 +117,7 @@ export default async function CityPage({ params }: Props) {
         <section style={{ maxWidth: 720 }}>
           <h2 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 22, fontWeight: 400, color: '#0F1F2D', marginBottom: 12 }}>Bostadsrättsföreningar i {cityName}</h2>
           <p style={{ fontSize: 15, color: '#4A6070', lineHeight: 1.7 }}>
-            I {cityName} finns det{meta?.count ? ` ${meta.count.toLocaleString('sv-SE')}` : ' ett stort antal'} registrerade bostadsrättsföreningar. BRFinfo.se samlar alla i ett register med data från Bolagsverket och SCB.
+            I {cityName} finns det{count != null && count > 0 ? ` ${count.toLocaleString('sv-SE')}` : ' flera'} registrerade bostadsrättsföreningar i vårt register. BRFinfo.se samlar dem med data från Bolagsverket och SCB.
           </p>
         </section>
       </div>

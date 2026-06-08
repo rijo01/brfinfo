@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import PartnerForm from './PartnerForm'
+import { getBRFCount } from '@/lib/supabase'
 
 export const metadata: Metadata = {
   title: 'Bli partner — Nå 26 795 BRF-styrelser direkt | För förvaltningsbolag',
@@ -106,7 +107,9 @@ const colors = {
   border: 'rgba(15,31,45,0.09)',
 }
 
-export default function ForvaltarePartnerPage() {
+export default async function ForvaltarePartnerPage() {
+  const brfCount = await getBRFCount()
+  const brfCountLabel = brfCount != null ? brfCount.toLocaleString('sv-SE') : '26 795'
   return (
     <>
       <script
@@ -254,8 +257,7 @@ export default function ForvaltarePartnerPage() {
             }}
           >
             {[
-              { num: '26 795', label: 'BRF:er indexerade' },
-              { num: '578 000+', label: 'Lägenheter' },
+              { num: brfCountLabel, label: 'BRF:er indexerade' },
               { num: '290', label: 'Kommuner' },
               { num: 'Dagligen', label: 'Uppdaterat' },
             ].map(s => (

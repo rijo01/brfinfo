@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import SearchBox from '@/components/SearchBox'
 import BRFCard from '@/components/BRFCard'
-import { getFeaturedBRFs } from '@/lib/supabase'
+import { getFeaturedBRFs, getBRFCount } from '@/lib/supabase'
 
 export const metadata: Metadata = {
   title: 'BRFinfo.se — Sök bland 26 795 bostadsrättsföreningar i Sverige',
@@ -11,23 +11,25 @@ export const metadata: Metadata = {
 }
 
 const CITIES = [
-  { slug: 'stockholm', name: 'Stockholm', count: 8421, emoji: 'S' },
-  { slug: 'goteborg', name: 'Göteborg', count: 4218, emoji: 'G' },
-  { slug: 'malmo', name: 'Malmö', count: 2876, emoji: 'M' },
-  { slug: 'uppsala', name: 'Uppsala', count: 1543, emoji: 'U' },
-  { slug: 'linkoping', name: 'Linköping', count: 987, emoji: 'L' },
-  { slug: 'orebro', name: 'Örebro', count: 742, emoji: 'Ö' },
-  { slug: 'vasteras', name: 'Västerås', count: 698, emoji: 'V' },
-  { slug: 'helsingborg', name: 'Helsingborg', count: 621, emoji: 'H' },
-  { slug: 'norrkoping', name: 'Norrköping', count: 544, emoji: 'N' },
-  { slug: 'jonkoping', name: 'Jönköping', count: 487, emoji: 'J' },
-  { slug: 'umea', name: 'Umeå', count: 412, emoji: 'U' },
-  { slug: 'lund', name: 'Lund', count: 389, emoji: 'L' },
+  { slug: 'stockholm', name: 'Stockholm', emoji: 'S' },
+  { slug: 'goteborg', name: 'Göteborg', emoji: 'G' },
+  { slug: 'malmo', name: 'Malmö', emoji: 'M' },
+  { slug: 'uppsala', name: 'Uppsala', emoji: 'U' },
+  { slug: 'linkoping', name: 'Linköping', emoji: 'L' },
+  { slug: 'orebro', name: 'Örebro', emoji: 'Ö' },
+  { slug: 'vasteras', name: 'Västerås', emoji: 'V' },
+  { slug: 'helsingborg', name: 'Helsingborg', emoji: 'H' },
+  { slug: 'norrkoping', name: 'Norrköping', emoji: 'N' },
+  { slug: 'jonkoping', name: 'Jönköping', emoji: 'J' },
+  { slug: 'umea', name: 'Umeå', emoji: 'U' },
+  { slug: 'lund', name: 'Lund', emoji: 'L' },
 ]
 
 
 export default async function HomePage() {
   const featured = await getFeaturedBRFs(6)
+  const brfCount = await getBRFCount()
+  const brfCountLabel = brfCount != null ? brfCount.toLocaleString('sv-SE') : '26 795'
 
   return (
     <>
@@ -62,7 +64,7 @@ export default async function HomePage() {
 
       {/* STATS */}
       <div style={{ background: '#1B7C6E', padding: '16px 24px', display: 'flex', justifyContent: 'center', gap: 60, flexWrap: 'wrap' }}>
-        {[{ num: '26 795', label: 'BRF:er' }, { num: '578 000+', label: 'Lägenheter' }, { num: '290', label: 'Kommuner' }, { num: 'Dagligen', label: 'Uppdaterat' }].map(s => (
+        {[{ num: brfCountLabel, label: 'BRF:er' }, { num: '290', label: 'Kommuner' }, { num: 'Dagligen', label: 'Uppdaterat' }].map(s => (
           <div key={s.label} style={{ textAlign: 'center', color: 'white' }}>
             <div style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 24, fontWeight: 600, letterSpacing: '-0.5px' }}>{s.num}</div>
             <div style={{ fontSize: 11, opacity: 0.65, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{s.label}</div>
@@ -89,7 +91,7 @@ export default async function HomePage() {
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#0F1F2D', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Fraunces, serif', fontSize: 13, fontWeight: 600, color: 'white', flexShrink: 0 }}>{c.emoji}</div>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 500, color: '#0F1F2D', lineHeight: 1.2 }}>{c.name}</div>
-                <div style={{ fontSize: 11.5, color: '#8A9BAB' }}>{c.count.toLocaleString('sv-SE')} BRF:er</div>
+                <div style={{ fontSize: 11.5, color: '#8A9BAB' }}>Visa BRF:er →</div>
               </div>
             </Link>
           ))}
@@ -149,7 +151,7 @@ export default async function HomePage() {
           </p>
           <h2 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 22, fontWeight: 400, color: '#0F1F2D', marginBottom: 12, marginTop: 28 }}>Vad är en bostadsrättsförening?</h2>
           <p style={{ fontSize: 15, color: '#4A6070', lineHeight: 1.7 }}>
-            En bostadsrättsförening (BRF) är en ekonomisk förening som äger en fastighet och upplåter lägenheter med bostadsrätt till sina medlemmar. I Sverige finns det drygt 26 000 registrerade BRF:er med sammanlagt över 570 000 lägenheter.
+            En bostadsrättsförening (BRF) är en ekonomisk förening som äger en fastighet och upplåter lägenheter med bostadsrätt till sina medlemmar. I Sverige finns det drygt 26 000 registrerade BRF:er.
           </p>
         </section>
       </div>

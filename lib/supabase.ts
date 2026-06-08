@@ -81,6 +81,26 @@ export async function getBRFsByCity(city: string, limit = 30): Promise<BRF[]> {
   return data as BRF[]
 }
 
+export async function getBRFCountByCity(city: string): Promise<number | null> {
+  // Same filter as getBRFsByCity so the count matches the listing shown on the page.
+  const { count, error } = await supabase
+    .from('foretag')
+    .select('orgnr', { count: 'exact', head: true })
+    .eq('juridisk_form', 'Bostadsrättsföreningar')
+    .ilike('postort', `%${city}%`)
+  if (error || count == null) return null
+  return count
+}
+
+export async function getBRFCount(): Promise<number | null> {
+  const { count, error } = await supabase
+    .from('foretag')
+    .select('orgnr', { count: 'exact', head: true })
+    .eq('juridisk_form', 'Bostadsrättsföreningar')
+  if (error || count == null) return null
+  return count
+}
+
 export async function getFeaturedBRFs(limit = 6): Promise<BRF[]> {
   const { data, error } = await supabase
     .from('foretag')
@@ -201,10 +221,6 @@ export function formatOrgnr(o: string) {
   return o.length === 10 && !o.includes('-') ? `${o.slice(0, 6)}-${o.slice(6)}` : o
 }
 export function bildadAr(s: string | null) { return s ? s.slice(0, 4) : 'Okänt' }
-export function avgift(brf: BRF) {
-  if (!brf.rank_score) return '—'
-  return `${600 + (brf.rank_score % 400)} kr/kvm`
-}
 export function initials(namn: string) {
   return namn.replace(/^(brf|bostadsrättsföreningen?)\s+/i, '')
     .split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase() ?? '').join('')

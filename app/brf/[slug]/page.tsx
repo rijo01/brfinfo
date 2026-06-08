@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getBRFBySlug, formatOrgnr, bildadAr, avgift, parseBvData, slugify, extractForvaltare } from '@/lib/supabase'
+import { getBRFBySlug, formatOrgnr, bildadAr, parseBvData, slugify, extractForvaltare } from '@/lib/supabase'
 import { getEnergiByOrgnr } from '@/lib/energi'
 import { EnergiFakta, EnergiEjRegistrerad } from '@/components/EnergiFakta'
 import EnergiLeadCTA from '@/components/EnergiLeadCTA'
@@ -31,7 +31,6 @@ export default async function BRFPage({ params }: Props) {
   if (!brf) notFound()
 
   const energi = await getEnergiByOrgnr(brf.orgnr)
-  const fee = avgift(brf)
   const year = bildadAr(brf.startdatum)
   const orgnr = formatOrgnr(brf.orgnr)
 
@@ -71,7 +70,6 @@ export default async function BRFPage({ params }: Props) {
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             {[
               { label: 'Bildad', value: year },
-              { label: 'Avg/kvm', value: fee },
               { label: 'Status', value: brf.status === 'Är verksam' ? 'Aktiv' : (brf.status ?? '—') },
               { label: 'Ort', value: brf.postort },
             ].map(m => (

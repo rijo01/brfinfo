@@ -1,13 +1,12 @@
 'use client'
 import Link from 'next/link'
-import { BRF, avgift, bildadAr, formatOrgnr, initials } from '@/lib/supabase'
+import { BRF, bildadAr, formatOrgnr, initials } from '@/lib/supabase'
 
 const COLORS = ['#0F1F2D', '#1B7C6E', '#1A3045', '#2A5C4A', '#3B4A6B']
 
 export default function BRFCard({ brf }: { brf: BRF }) {
   const color = COLORS[parseInt(brf.orgnr.replace(/\D/g, ''), 10) % COLORS.length]
   const init = initials(brf.namn)
-  const fee = avgift(brf)
   const year = bildadAr(brf.startdatum)
   const orgnr = formatOrgnr(brf.orgnr)
   const forvaltare = (brf as any).forvaltare?.replace(/^c\/o\s+/i, '').trim() || null
@@ -31,10 +30,6 @@ export default function BRFCard({ brf }: { brf: BRF }) {
         <h3 itemProp="name" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 15, fontWeight: 400, color: '#0F1F2D', marginBottom: 3, lineHeight: 1.3 }}>{brf.namn}</h3>
         <p style={{ fontSize: 12, color: '#8A9BAB', marginBottom: 12 }}>{orgnr}{year !== 'Okänt' && ` · Bildad ${year}`}</p>
         <div style={{ display: 'flex', gap: 20, marginBottom: 12 }}>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 500, color: '#1A2B38' }}>{fee}</div>
-            <div style={{ fontSize: 11, color: '#8A9BAB', textTransform: 'uppercase', letterSpacing: '0.3px' }}>Avg/kvm</div>
-          </div>
           <div>
             <div style={{ fontSize: 13, fontWeight: 500, color: brf.status === 'AKTIV' ? '#1B7C6E' : '#C9932A' }}>{brf.status === 'AKTIV' ? 'Aktiv' : (brf.status ?? '—')}</div>
             <div style={{ fontSize: 11, color: '#8A9BAB', textTransform: 'uppercase', letterSpacing: '0.3px' }}>Status</div>

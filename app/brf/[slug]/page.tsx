@@ -204,6 +204,11 @@ export default async function BRFPage({ params }: Props) {
               <a href={`https://www.bolagsverket.se/omregistret/sokforetagochorganisationer/${brf.orgnr}`} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: 12.5, color: '#1B7C6E', textDecoration: 'none', padding: '6px 0', borderBottom: '1px solid rgba(15,31,45,0.06)' }}>Bolagsverket ↗</a>
               <a href={`https://infofinder.se/foretag/${brf.slug}`} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: 12.5, color: '#1B7C6E', textDecoration: 'none', padding: '6px 0' }}>InfoFinder.se ↗</a>
             </div>
+            <div style={{ background: 'rgba(27,124,110,0.06)', border: '1px solid rgba(27,124,110,0.2)', borderRadius: 12, padding: '16px 22px' }}>
+              <h3 style={{ fontSize: 13, fontWeight: 600, color: '#0F1F2D', marginBottom: 6 }}>Saknar föreningen en hemsida?</h3>
+              <p style={{ fontSize: 12.5, color: '#4A6070', lineHeight: 1.55, marginBottom: 10 }}>Vi bygger och sköter hemsidor åt bostadsrättsföreningar.</p>
+              <Link href="/hemsida" style={{ fontSize: 13, color: '#1B7C6E', textDecoration: 'none', fontWeight: 500 }}>Läs mer →</Link>
+            </div>
           </div>
         </div>
       </div>

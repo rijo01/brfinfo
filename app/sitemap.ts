@@ -11,6 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/claima`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
     { url: `${base}/forvaltare`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
     { url: `${base}/forvaltare-partner`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${base}/hemsida`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
     { url: `${base}/energideklaration`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
     { url: `${base}/energiklass/stockholm`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
     { url: `${base}/kontakt`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },

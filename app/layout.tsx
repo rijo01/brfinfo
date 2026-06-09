@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import Nav from '@/components/Nav'
-import Footer from '@/components/Footer'
+import SiteFooter from '@/components/SiteFooter'
 import ScrollToTop from '@/components/ScrollToTop'
 import { GoogleAnalytics } from '@/components/GoogleAnalytics'
 import CookieBanner from '@/components/CookieBanner'
@@ -32,7 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Nav />
         <ScrollToTop />
         <main>{children}</main>
-        <Footer />
+        <SiteFooter />
         <CookieBanner />
       </body>
     </html>

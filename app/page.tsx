@@ -113,6 +113,22 @@ export default async function HomePage() {
           </Link>
         </div>
 
+        {/* HEMSIDA ÅT BRF */}
+        <div style={{ background: 'rgba(27,124,110,0.06)', border: '1px solid rgba(27,124,110,0.22)', borderRadius: 16, padding: '40px 48px', marginBottom: 60, textAlign: 'center' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(27,124,110,0.12)', border: '1px solid rgba(27,124,110,0.28)', padding: '5px 14px', borderRadius: 20, fontSize: 12, color: '#1B7C6E', fontWeight: 500, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: 18 }}>
+            För föreningen
+          </div>
+          <h2 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 28, fontWeight: 300, color: '#0F1F2D', letterSpacing: '-0.5px', marginBottom: 12, lineHeight: 1.2 }}>
+            Behöver er förening en <em style={{ color: '#1B7C6E', fontStyle: 'normal' }}>egen hemsida?</em>
+          </h2>
+          <p style={{ fontSize: 15, color: '#4A6070', lineHeight: 1.7, maxWidth: 560, margin: '0 auto 24px' }}>
+            Vi bygger och sköter professionella hemsidor åt bostadsrättsföreningar — egen adress, dokumentarkiv, styrelsesidor och felanmälan, utan teknik­krångel.
+          </p>
+          <Link href="/hemsida" style={{ display: 'inline-block', background: '#1B7C6E', color: 'white', padding: '11px 24px', borderRadius: 8, fontSize: 14, fontWeight: 500, textDecoration: 'none' }}>
+            Läs mer om hemsidor →
+          </Link>
+        </div>
+
         {/* FOR BUSINESS */}
         <div className="home-business-grid" style={{ background: '#0F1F2D', borderRadius: 16, padding: '40px 48px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, alignItems: 'center', marginBottom: 60 }}>
           <div>

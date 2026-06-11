@@ -1,27 +1,21 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getForvaltareBySlug, getForvaltareList, formatOrgnr, slugify } from '@/lib/supabase'
+import { getForvaltareBySlug, formatOrgnr, slugify } from '@/lib/supabase'
 import ForvaltareKontaktForm from './ForvaltareKontaktForm'
 
 type Props = { params: Promise<{ slug: string }> }
 
-// ISR: rendera sidan en gång och servera cachat i 24 h. De dyra scanningarna
-// (nu via det cachade förvaltar-indexet) körs sällan; besökare väntar aldrig.
+// ISR on-demand: sidorna prerenderas INTE vid build. Första besöket på en slug
+// renderar on-demand (~5 s om förvaltar-indexet är kallt, annars ms) och cachas
+// sedan i 24 h. Övriga slugar delar samma cachade index vid runtime → snabba.
+//
+// OBS: använd INTE generateStaticParams här. Vercels build-workers delar inte
+// unstable_cache, så prerendering av ~1641 sidor blev ~1641 separata scans →
+// per-sida-timeout (>60 s) och misslyckat bygge. On-demand undviker det helt.
 export const revalidate = 86400
-// Skyddsnät: om en kall indexbyggnad någon gång tar längre tid ska funktionen
-// inte kapas mitt i. Behandlar symptomet, inte orsaken — orsaken löses av cachen.
+// Skyddsnät: om en kall indexbyggnad tar längre tid ska funktionen inte kapas mitt i.
 export const maxDuration = 60
-
-export async function generateStaticParams() {
-  // Förrendera de förvaltare som har ≥2 BRF (~1 461 st) vid build. Bygger på det
-  // CACHADE indexet (getForvaltareList → getForvaltareIndex) → en enda scan delas
-  // av alla, så build-tiden exploderar inte trots tusentals sidor.
-  // dynamicParams lämnas default (true): singleton-förvaltare (1 BRF) som inte
-  // förrenderas här renderas on-demand via SAMMA cache och ger 200, inte 404.
-  const list = await getForvaltareList(2)
-  return list.map(f => ({ slug: f.slug }))
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params

@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { unstable_cache } from 'next/cache'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://placeholder.supabase.co'
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'placeholder'
@@ -127,8 +128,9 @@ export function parseBvData(brf: BRF): BRF['bolagsverket_data'] {
   return brf.bolagsverket_data
 }
 
-export function extractForvaltare(brf: BRF): string | null {
-  if (brf.forvaltare) return brf.forvaltare
+// Härled förvaltare ENBART ur coAdress (filtrerar bort personnamn, strippar "c/o").
+// Detta är den taxonomi som /forvaltare-listan och slug-universumet bygger på.
+function forvaltareFromCoAdress(brf: BRF): string | null {
   const bv = parseBvData(brf)
   const co = bv?.postadress_detaljer?.coAdress
   if (!co || typeof co !== 'string') return null
@@ -137,73 +139,100 @@ export function extractForvaltare(brf: BRF): string | null {
   return trimmed.replace(/^c\/o\s+/i, '').trim() || null
 }
 
-export async function getForvaltareList(minCount = 2): Promise<Forvaltare[]> {
-  // Fetch all BRFs with bolagsverket_data to extract forvaltare from coAdress
-  const allBrfs: BRF[] = []
+// Används av BRF-sidan: forvaltare-kolumnen först, annars coAdress. OFÖRÄNDRAD semantik.
+export function extractForvaltare(brf: BRF): string | null {
+  if (brf.forvaltare) return brf.forvaltare
+  return forvaltareFromCoAdress(brf)
+}
+
+// ── Cachat förvaltar-index ───────────────────────────────────────────────────
+// Förvaltare härleds coAdress-only (samma taxonomi som /forvaltare-listan haft).
+// Att räkna det per request innebar TVÅ full-table-scans (en med select *, ~30 s)
+// och tippade under crawler-last. Vi bygger i stället HELA mappen förvaltare→BRF
+// med EN slimmad scan och cachar den i Next Data Cache.
+//
+// Storlek: kompakt array-kodning [orgnr,namn,slug,postort,adress], försorterad på
+// rank_score → ~1,4 MB, väl under Next Data Cache:s 2 MB-gräns per post (så hela
+// indexet får plats i EN cache-post → alla kalla slugar delar samma map).
+//
+// STRIKT READ-ONLY mot foretag: enda DB-anropet är .select(...). Ingen
+// insert/update/upsert/delete/rpc. Källtabellen rörs aldrig.
+export type SlimBRF = Pick<BRF, 'orgnr' | 'namn' | 'slug' | 'postort' | 'adress'>
+type PackedBRF = [orgnr: string, namn: string, slug: string, postort: string, adress: string | null]
+function unpack(r: PackedBRF): SlimBRF {
+  return { orgnr: r[0], namn: r[1], slug: r[2], postort: r[3], adress: r[4] }
+}
+
+async function buildForvaltareIndex(): Promise<Record<string, PackedBRF[]>> {
+  // Samla med rank_score för sortering; rank_score lagras INTE i cachen (sparar plats).
+  const tmp: Record<string, Array<{ r: PackedBRF; rank: number }>> = {}
   let offset = 0
   const batchSize = 1000
   while (true) {
     const { data, error } = await supabase
       .from('foretag')
-      .select('orgnr,namn,slug,postort,bolagsverket_data')
+      .select('orgnr,namn,slug,postort,adress,rank_score,bolagsverket_data')
       .eq('juridisk_form', 'Bostadsrättsföreningar')
       .not('bolagsverket_data', 'is', null)
       .range(offset, offset + batchSize - 1)
     if (error || !data || data.length === 0) break
-    allBrfs.push(...(data as BRF[]))
+    for (const row of data as BRF[]) {
+      const f = forvaltareFromCoAdress(row)
+      if (!f) continue
+      ;(tmp[f] ??= []).push({
+        r: [row.orgnr, row.namn, row.slug, row.postort, row.adress],
+        rank: row.rank_score ?? 0,
+      })
+    }
     if (data.length < batchSize) break
     offset += batchSize
   }
-
-  const counts: Record<string, number> = {}
-  for (const brf of allBrfs) {
-    const f = extractForvaltare(brf)
-    if (f) counts[f] = (counts[f] || 0) + 1
+  // Försortera på rank_score desc (som detaljsidan förväntar) och släng rank_score.
+  const index: Record<string, PackedBRF[]> = {}
+  for (const name of Object.keys(tmp)) {
+    index[name] = tmp[name].sort((a, b) => b.rank - a.rank).map(x => x.r)
   }
+  return index
+}
 
-  return Object.entries(counts)
-    .filter(([, count]) => count >= minCount) // List view: 2+ BRFs; detail resolution: 1+ (avoid dead internlänkar)
-    .map(([name, count]) => ({
-      name,
-      slug: slugify(name),
-      count,
-    }))
+// Cachas i 24 h. Förvaltardata (Bolagsverket coAdress) ändras månadsvis → 24 h ger
+// gott om färskhet utan korrekthetsproblem. Första kalla bygget per fönster kör
+// scanningen EN gång; alla övriga requests — inkl. en crawler-storm över tusentals
+// slugar — delar samma cachade map och blir millisekunder i stället för ~30 s.
+const getForvaltareIndex = unstable_cache(
+  buildForvaltareIndex,
+  ['forvaltare-index-v1'],
+  { revalidate: 86400, tags: ['forvaltare-index'] },
+)
+
+export async function getForvaltareList(minCount = 2): Promise<Forvaltare[]> {
+  const index = await getForvaltareIndex()
+  return Object.entries(index)
+    .filter(([, brfs]) => brfs.length >= minCount) // Listvy: 2+ BRF; detalj-resolution: 1+ (undvik döda internlänkar)
+    .map(([name, brfs]) => ({ name, slug: slugify(name), count: brfs.length }))
     .sort((a, b) => b.count - a.count)
 }
 
-export async function getBRFsByForvaltare(forvaltareName: string, limit = 500): Promise<BRF[]> {
-  // Fetch BRFs and filter by forvaltare (from column or JSON)
-  const allBrfs: BRF[] = []
-  let offset = 0
-  const batchSize = 1000
-  while (true) {
-    const { data, error } = await supabase
-      .from('foretag')
-      .select('*')
-      .eq('juridisk_form', 'Bostadsrättsföreningar')
-      .not('bolagsverket_data', 'is', null)
-      .range(offset, offset + batchSize - 1)
-    if (error || !data || data.length === 0) break
-    allBrfs.push(...(data as BRF[]))
-    if (data.length < batchSize) break
-    offset += batchSize
-  }
-
-  return allBrfs
-    .filter(brf => extractForvaltare(brf) === forvaltareName)
-    .sort((a, b) => (b.rank_score ?? 0) - (a.rank_score ?? 0))
-    .slice(0, limit)
+// Behålls som publik export (tunn vy över det cachade indexet). Tidigare gjorde
+// den en egen full-table-scan med select * — nu noll extra DB-anrop.
+export async function getBRFsByForvaltare(forvaltareName: string, limit = 500): Promise<SlimBRF[]> {
+  const index = await getForvaltareIndex()
+  return (index[forvaltareName] ?? []).slice(0, limit).map(unpack)
 }
 
-export async function getForvaltareBySlug(slug: string): Promise<{ name: string; brfs: BRF[] } | null> {
-  // minCount=1: a förvaltare-detalj kan nås via internlänk från en enskild BRF-sida
+export async function getForvaltareBySlug(slug: string): Promise<{ name: string; total: number; brfs: SlimBRF[] } | null> {
+  // minCount=1: en förvaltar-detalj kan nås via internlänk från en enskild BRF-sida
   // även om förvaltaren bara har 1 BRF. Annars blir varje sådan länk en 404.
-  const list = await getForvaltareList(1)
-  const match = list.find(f => f.slug === slug)
+  const index = await getForvaltareIndex()
+  // Sortera på antal desc så att en ev. slug-krock löses likadant som tidigare
+  // (getForvaltareList sorterade på count desc och find() tog första = högsta).
+  const match = Object.entries(index)
+    .sort((a, b) => b[1].length - a[1].length)
+    .find(([name]) => slugify(name) === slug)
   if (!match) return null
-
-  const brfs = await getBRFsByForvaltare(match.name)
-  return { name: match.name, brfs }
+  // total = hela gruppens storlek; brfs kapas vid 500 för rendering. Sidan visar
+  // "500 av <total>" när den kapas så räkningen inte motsäger listsidan.
+  return { name: match[0], total: match[1].length, brfs: match[1].slice(0, 500).map(unpack) }
 }
 
 export function slugify(name: string): string {

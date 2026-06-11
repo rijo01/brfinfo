@@ -1,18 +1,35 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getForvaltareBySlug, formatOrgnr, slugify } from '@/lib/supabase'
+import { getForvaltareBySlug, getForvaltareList, formatOrgnr, slugify } from '@/lib/supabase'
 import ForvaltareKontaktForm from './ForvaltareKontaktForm'
 
 type Props = { params: Promise<{ slug: string }> }
+
+// ISR: rendera sidan en gång och servera cachat i 24 h. De dyra scanningarna
+// (nu via det cachade förvaltar-indexet) körs sällan; besökare väntar aldrig.
+export const revalidate = 86400
+// Skyddsnät: om en kall indexbyggnad någon gång tar längre tid ska funktionen
+// inte kapas mitt i. Behandlar symptomet, inte orsaken — orsaken löses av cachen.
+export const maxDuration = 60
+
+export async function generateStaticParams() {
+  // Förrendera de förvaltare som har ≥2 BRF (~1 461 st) vid build. Bygger på det
+  // CACHADE indexet (getForvaltareList → getForvaltareIndex) → en enda scan delas
+  // av alla, så build-tiden exploderar inte trots tusentals sidor.
+  // dynamicParams lämnas default (true): singleton-förvaltare (1 BRF) som inte
+  // förrenderas här renderas on-demand via SAMMA cache och ger 200, inte 404.
+  const list = await getForvaltareList(2)
+  return list.map(f => ({ slug: f.slug }))
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const data = await getForvaltareBySlug(slug)
   if (!data) return { title: 'Förvaltare hittades inte' }
   return {
-    title: `${data.name} — Förvaltare av ${data.brfs.length} BRF:er`,
-    description: `${data.name} förvaltar ${data.brfs.length} bostadsrättsföreningar i Sverige. Se vilka BRF:er de ansvarar för.`,
+    title: `${data.name} — Förvaltare av ${data.total} BRF:er`,
+    description: `${data.name} förvaltar ${data.total} bostadsrättsföreningar i Sverige. Se vilka BRF:er de ansvarar för.`,
     alternates: { canonical: `https://brfinfo.se/forvaltare/${slug}` },
   }
 }
@@ -22,7 +39,7 @@ export default async function ForvaltareDetailPage({ params }: Props) {
   const data = await getForvaltareBySlug(slug)
   if (!data) notFound()
 
-  const { name, brfs } = data
+  const { name, brfs, total } = data
   const card = { background: 'white', border: '1px solid rgba(15,31,45,0.09)', borderRadius: 12, padding: '24px 28px', marginBottom: 16 } as React.CSSProperties
   const cardTitle = { fontFamily: 'Fraunces, Georgia, serif', fontSize: 18, fontWeight: 400, color: '#0F1F2D', marginBottom: 16, letterSpacing: '-0.3px' } as React.CSSProperties
 
@@ -39,7 +56,7 @@ export default async function ForvaltareDetailPage({ params }: Props) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
         '@context': 'https://schema.org', '@type': 'Organization',
-        name, description: `${name} förvaltar ${brfs.length} bostadsrättsföreningar i Sverige.`,
+        name, description: `${name} förvaltar ${total} bostadsrättsföreningar i Sverige.`,
         url: `https://brfinfo.se/forvaltare/${slug}`,
       })}} />
 
@@ -66,7 +83,7 @@ export default async function ForvaltareDetailPage({ params }: Props) {
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
                 {[
-                  { label: 'Antal BRF:er', value: String(brfs.length) },
+                  { label: 'Antal BRF:er', value: brfs.length < total ? `${brfs.length} av ${total}` : String(total) },
                   { label: 'Antal orter', value: String(cities.length) },
                   { label: 'Största ort', value: cities[0]?.[0] ?? '—' },
                 ].map(m => (

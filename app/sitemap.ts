@@ -29,16 +29,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const { createClient } = await import('@supabase/supabase-js')
     const supabase = createClient(url, key)
-    const { data, error } = await supabase
-      .from('foretag').select('slug')
-      .eq('juridisk_form', 'Bostadsrättsföreningar')
-      .not('slug', 'is', null)
-      .limit(50000)
-    
-    if (error) console.error('Sitemap Supabase error:', error)
 
-    const brfPages: MetadataRoute.Sitemap = (data ?? []).map((r: any) => ({
-      url: `${base}/brf/${r.slug}`, lastModified: new Date(), changeFrequency: 'monthly' as const, priority: 0.6,
+    // Paginera i 1000-batchar tills tomt. En enkel .limit(50000) kapas TYST av
+    // PostgREST:s 1000-radstak → tidigare kom bara 1000 av 26795 BRF med i sitemap.
+    //
+    // ORDER BY krävs för stabil offset-paginering: utan order kör Postgres parallell
+    // seq-scan vars radordning skiljer sig mellan de 27 range-requesten → fönstren
+    // överlappar/hoppar → ~6400 dubbletter och hål (verifierat). MEN orgnr/slug som
+    // primär sortnyckel saknar index över det ofiltrerade jättebordet → full sort →
+    // statement timeout (30s). updated_at ÄR indexerad (snabb), och orgnr (unik) som
+    // tiebreaker ger total ordning så sidgränserna aldrig kan tappa/dubblera en rad.
+    // Verifierat: 26795 rader == 26795 distinkta, 0 hål, 0 dubbletter, ~2,7 s.
+    // STRIKT READ-ONLY: enda anropet är .select(slug). Ingen mutation av foretag.
+    const slugs: string[] = []
+    let offset = 0
+    const batchSize = 1000
+    while (true) {
+      const { data, error } = await supabase
+        .from('foretag').select('slug')
+        .eq('juridisk_form', 'Bostadsrättsföreningar')
+        .not('slug', 'is', null)
+        .order('updated_at', { ascending: true, nullsFirst: false })
+        .order('orgnr', { ascending: true })
+        .range(offset, offset + batchSize - 1)
+      if (error) { console.error('Sitemap Supabase error:', error); break }
+      if (!data || data.length === 0) break
+      for (const r of data as { slug: string }[]) slugs.push(r.slug)
+      if (data.length < batchSize) break
+      offset += batchSize
+    }
+
+    const brfPages: MetadataRoute.Sitemap = slugs.map((slug) => ({
+      url: `${base}/brf/${slug}`, lastModified: new Date(), changeFrequency: 'monthly' as const, priority: 0.6,
     }))
     return [...statics, ...brfPages]
   } catch {

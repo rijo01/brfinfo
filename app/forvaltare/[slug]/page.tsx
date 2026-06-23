@@ -49,10 +49,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const data = await resolveForvaltareOrRedirect(slug)
   if (!data) return { title: 'Förvaltare hittades inte' }
+  // Selektiv noindex: bara förvaltare med ≥2 BRF indexeras. Singletons (1 BRF) är
+  // tunna/lågkvalitativa (ofta personnamn, kundnummer eller enskild BRF som c/o) och
+  // späder ut sajtens kvalitet i Googles ögon → noindex. follow:true så crawlern ändå
+  // följer sidans interna länkar till BRF-sidorna (leder crawl mot kärninnehållet).
+  // Ren count, ingen junk-heuristik (den felklassar riktiga bolag som SBC/Egeryds).
+  // Påverkar VARKEN HTTP-status (sidan är fortsatt 200), redirect-grenen (308 för c-o-
+  // kastas redan i resolveForvaltareOrRedirect ovan) ELLER ISR/cache (metan renderas in
+  // i samma cachade HTML; data.total kommer ur det redan cachade indexet, ingen ny query).
   return {
     title: `${data.name} — Förvaltare av ${data.total} BRF:er`,
     description: `${data.name} förvaltar ${data.total} bostadsrättsföreningar i Sverige. Se vilka BRF:er de ansvarar för.`,
     alternates: { canonical: `https://brfinfo.se/forvaltare/${slug}` },
+    robots: data.total >= 2 ? undefined : { index: false, follow: true },
   }
 }
 

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import Link from 'next/link'
 import { getForvaltareBySlug, formatOrgnr, slugify } from '@/lib/supabase'
 import ForvaltareKontaktForm from './ForvaltareKontaktForm'
@@ -21,9 +21,33 @@ export async function generateStaticParams() {
   return []
 }
 
+// Resolverar slugen, ELLER 308:ar en historisk "c-o-"-slug till sin rena form OM
+// den rena formen bevisligen ger 200 (getForvaltareBySlug !== null). Annars null → 404.
+//
+// Bakgrund: före c/o-fixen länkade/indexerades ~2028 rena förvaltare under en
+// "c-o-"-slug (rå "c/o X" ur forvaltare-kolumnen). Routen är coAdress-only och 404:ar
+// dem nu. Vi 308:ar de rena (c-o-X → X) och låter de ~3772 skräp-slugarna
+// (personnamn/felförda BRF, vars strippade form INTE finns i 200-universumet) 404:a.
+//
+// LOOP-SÄKERHET: redirecten avfyras ENDAST när getForvaltareBySlug(cand) !== null.
+// Då renderar /forvaltare/<cand> 200 och når aldrig denna gren → max ETT hopp, aldrig
+// en kedja. cand = slug utan "c-o-"-prefix är strikt kortare → kan aldrig peka på sig
+// själv. (Empiriskt: 0 av de 2028 målen är själva c-o-prefixade.)
+async function resolveForvaltareOrRedirect(slug: string) {
+  const data = await getForvaltareBySlug(slug)
+  if (data) return data
+  if (slug.startsWith('c-o-')) {
+    const cand = slug.replace(/^c-o-/, '')
+    if (cand && (await getForvaltareBySlug(cand))) {
+      permanentRedirect(`/forvaltare/${cand}`) // 308; kastar NEXT_REDIRECT → avbryter render
+    }
+  }
+  return null
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const data = await getForvaltareBySlug(slug)
+  const data = await resolveForvaltareOrRedirect(slug)
   if (!data) return { title: 'Förvaltare hittades inte' }
   return {
     title: `${data.name} — Förvaltare av ${data.total} BRF:er`,
@@ -34,7 +58,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ForvaltareDetailPage({ params }: Props) {
   const { slug } = await params
-  const data = await getForvaltareBySlug(slug)
+  const data = await resolveForvaltareOrRedirect(slug)
   if (!data) notFound()
 
   const { name, brfs, total } = data

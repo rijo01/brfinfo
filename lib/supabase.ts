@@ -130,7 +130,9 @@ export function parseBvData(brf: BRF): BRF['bolagsverket_data'] {
 
 // Härled förvaltare ENBART ur coAdress (filtrerar bort personnamn, strippar "c/o").
 // Detta är den taxonomi som /forvaltare-listan och slug-universumet bygger på.
-function forvaltareFromCoAdress(brf: BRF): string | null {
+// Exporteras så att BRF-sidan kan länka via EXAKT samma härledning som resolvern
+// (getForvaltareBySlug) — annars genereras c-o-slugar som routen inte kan resolva.
+export function forvaltareFromCoAdress(brf: BRF): string | null {
   const bv = parseBvData(brf)
   const co = bv?.postadress_detaljer?.coAdress
   if (!co || typeof co !== 'string') return null

@@ -11,7 +11,7 @@ type Props = { searchParams: Promise<{ q?: string; stad?: string }> }
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const { q } = await searchParams
   return {
-    title: q ? `Sökresultat för "${q}" — BRFinfo.se` : 'Sök BRF — BRFinfo.se',
+    title: q ? `Sökresultat för "${q}"` : 'Sök BRF',
     robots: { index: false, follow: true },
   }
 }

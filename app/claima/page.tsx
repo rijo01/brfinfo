@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import ClaimaForm from './ClaimaForm'
 
 export const metadata: Metadata = {
-  title: 'Claima din BRF — Uppdatera föreningsinformation | BRFinfo.se',
+  title: 'Claima din BRF — Uppdatera föreningsinformation',
   description: 'Är du styrelseledamot? Claima er sida på BRFinfo och håll kontaktuppgifter uppdaterade.',
   alternates: { canonical: 'https://brfinfo.se/claima' },
 }

@@ -46,7 +46,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const m = META[city]
   const name = m?.name ?? city
   return {
-    title: `BRF i ${name} — bostadsrättsföreningar med styrelseinfo | BRFinfo.se`,
+    title: `BRF i ${name} — bostadsrättsföreningar med styrelseinfo`,
     description: m?.desc ?? `Hitta BRF:er i ${name} med styrelseinfo och kontaktuppgifter.`,
     alternates: { canonical: `https://brfinfo.se/stad/${city}` },
   }

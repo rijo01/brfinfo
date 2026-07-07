@@ -10,7 +10,7 @@ export default function Footer() {
               BRF<span style={{ color: '#1B7C6E' }}>info</span>
             </div>
             <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', lineHeight: 1.7, maxWidth: 260 }}>
-              Sveriges mest kompletta BRF-register. Data från Bolagsverket och SCB, uppdateras dagligen.
+              Sveriges mest kompletta BRF-register. Data från Bolagsverket och SCB, kompletterad med uppgifter från föreningarna.
             </p>
           </div>
           {[

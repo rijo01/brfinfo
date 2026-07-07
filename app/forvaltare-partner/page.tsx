@@ -259,7 +259,7 @@ export default async function ForvaltarePartnerPage() {
             {[
               { num: brfCountLabel, label: 'BRF:er indexerade' },
               { num: '290', label: 'Kommuner' },
-              { num: 'Dagligen', label: 'Uppdaterat' },
+              { num: 'Officiell', label: 'Källa' },
             ].map(s => (
               <div
                 key={s.label}
@@ -405,8 +405,8 @@ export default async function ForvaltarePartnerPage() {
               },
               {
                 icon: '03',
-                title: 'Aktiv styrelse-trafik',
-                body: 'BRFinfo besöks dagligen av styrelsemedlemmar som jämför avgifter, förvaltning och grannar.',
+                title: 'Rikstäckande register',
+                body: `Sveriges samlade register över ${brfCountLabel} bostadsrättsföreningar i 290 kommuner.`,
               },
               {
                 icon: '04',
@@ -416,7 +416,7 @@ export default async function ForvaltarePartnerPage() {
               {
                 icon: '05',
                 title: 'Verifierade data',
-                body: 'Direkt från Bolagsverket och SCB, dagligen uppdaterad. Inga inaktuella listor.',
+                body: 'Direkt från Bolagsverket och SCB — officiella datakällor.',
               },
               {
                 icon: '06',

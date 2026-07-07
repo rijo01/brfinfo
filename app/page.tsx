@@ -64,7 +64,7 @@ export default async function HomePage() {
 
       {/* STATS */}
       <div style={{ background: '#1B7C6E', padding: '16px 24px', display: 'flex', justifyContent: 'center', gap: 60, flexWrap: 'wrap' }}>
-        {[{ num: brfCountLabel, label: 'BRF:er' }, { num: '290', label: 'Kommuner' }, { num: 'Dagligen', label: 'Uppdaterat' }].map(s => (
+        {[{ num: brfCountLabel, label: 'BRF:er' }, { num: '290', label: 'Kommuner' }, { num: 'Officiell', label: 'Källa' }].map(s => (
           <div key={s.label} style={{ textAlign: 'center', color: 'white' }}>
             <div style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 24, fontWeight: 600, letterSpacing: '-0.5px' }}>{s.num}</div>
             <div style={{ fontSize: 11, opacity: 0.65, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{s.label}</div>
@@ -164,7 +164,7 @@ export default async function HomePage() {
         <section style={{ maxWidth: 720 }}>
           <h2 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 22, fontWeight: 400, color: '#0F1F2D', marginBottom: 12 }}>Om BRFinfo — Sveriges BRF-register</h2>
           <p style={{ fontSize: 15, color: '#4A6070', lineHeight: 1.7, marginBottom: 12 }}>
-            BRFinfo.se samlar information om alla registrerade bostadsrättsföreningar i Sverige. Data hämtas dagligen från Bolagsverket och SCB och kompletteras med information som föreningarna själva lämnar in.
+            BRFinfo.se samlar information om alla registrerade bostadsrättsföreningar i Sverige. Data hämtas från Bolagsverket och SCB och kompletteras med information som föreningarna själva lämnar in.
           </p>
           <h2 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 22, fontWeight: 400, color: '#0F1F2D', marginBottom: 12, marginTop: 28 }}>Vad är en bostadsrättsförening?</h2>
           <p style={{ fontSize: 15, color: '#4A6070', lineHeight: 1.7 }}>

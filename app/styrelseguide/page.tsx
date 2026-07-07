@@ -70,6 +70,11 @@ const PAKET: Paket[] = [
   },
 ]
 
+// UI visar bara köpbara paket. paket2/paket3 (comingSoon) döljs tills de aktiveras —
+// hela tier-datan + checkout-logiken finns kvar; sätt comingSoon:false för att åter-visa.
+const VISIBLE_PAKET = PAKET.filter(p => !p.comingSoon)
+const SINGLE_PAKET = VISIBLE_PAKET.length === 1
+
 const STEG: Array<{ num: string; titel: string; text: string }> = [
   { num: '1', titel: 'Välj paket', text: 'Välj det paket som passar er styrelse och klicka på köpknappen.' },
   { num: '2', titel: 'Betala säkert', text: 'Betala med kort via Stripe — säker betalning direkt i kassan.' },
@@ -90,12 +95,12 @@ export default function StyrelseguidePage() {
         name: 'Den välskötta bostadsrättsföreningen',
         description: 'Praktisk handbok för BRF-styrelsen: 20 kapitel i 6 delar med checklista i varje kapitel, 50 spartips, 30 vanliga misstag och ett mallpaket med 15 mallar. Faktagranskad mot primärkällor. ~89 sidor.',
         brand: { '@type': 'Brand', name: 'BRFinfo.se' },
-        offers: PAKET.map(p => ({
+        offers: VISIBLE_PAKET.map(p => ({
           '@type': 'Offer',
           name: p.namn,
           price: p.pris.replace(/[^\d]/g, ''),
           priceCurrency: 'SEK',
-          availability: p.comingSoon ? 'https://schema.org/PreOrder' : 'https://schema.org/InStock',
+          availability: 'https://schema.org/InStock',
         })),
       }) }} />
 
@@ -117,8 +122,17 @@ export default function StyrelseguidePage() {
             Handboken ger er struktur där det idag ofta är magkänsla — konkret vägledning för de beslut som faktiskt rör föreningens pengar.
           </p>
           <a href="#paket" style={{ display: 'inline-block', background: GOLD, color: NAVY, padding: '14px 30px', borderRadius: 8, fontSize: 15, fontWeight: 600, textDecoration: 'none' }}>
-            Se paket och priser →
+            Se pris →
           </a>
+          {/* Förtroendesignaler — juristgranskad lyft tydligt (sant och tidigare underanvänt). */}
+          <div style={{ display: 'flex', gap: 20, justifyContent: 'center', flexWrap: 'wrap', marginTop: 28 }}>
+            {['Juristgranskad', 'Faktagranskad mot primärkällor', 'Nedladdning direkt'].map(t => (
+              <span key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: 'rgba(255,255,255,0.72)', fontSize: 13.5 }}>
+                <span style={{ color: GOLD_ON_DARK, fontWeight: 700 }}>✓</span>
+                {t}
+              </span>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -137,7 +151,7 @@ export default function StyrelseguidePage() {
           <div style={kicker}>Vad du får</div>
           <h2 style={h2}>20 kapitel i 6 delar</h2>
           <p style={{ ...lead, marginBottom: 32 }}>
-            Varje kapitel avslutas med en checklista. Innehållet är faktagranskat mot primärkällor — bland andra Skatteverket, Boverket, Bolagsverket och Energimyndigheten.
+            Varje kapitel avslutas med en checklista. Innehållet är juristgranskat och faktagranskat mot primärkällor — bland andra Skatteverket, Boverket, Bolagsverket och Energimyndigheten.
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 14, marginBottom: 40 }}>
@@ -178,14 +192,16 @@ export default function StyrelseguidePage() {
 
       {/* PAKET */}
       <section id="paket" style={section}>
-        <div style={kicker}>Paket och priser</div>
-        <h2 style={h2}>Välj det som passar er styrelse</h2>
+        <div style={kicker}>Pris</div>
+        <h2 style={h2}>{SINGLE_PAKET ? 'En komplett handbok för styrelsen' : 'Välj det som passar er styrelse'}</h2>
         <p style={{ ...lead, marginBottom: 36 }}>
-          Tre paket — från enbart handboken till hela styrelsepaketet med personlig genomgång.
+          {SINGLE_PAKET
+            ? 'Hela handboken som PDF — juristgranskad, ~89 sidor med checklista i varje kapitel. Nedladdning direkt efter köp.'
+            : 'Tre paket — från enbart handboken till hela styrelsepaketet med personlig genomgång.'}
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 20, alignItems: 'stretch' }}>
-          {PAKET.map(p => (
+        <div style={{ display: 'grid', gridTemplateColumns: SINGLE_PAKET ? 'minmax(0,420px)' : 'repeat(auto-fit,minmax(260px,1fr))', justifyContent: SINGLE_PAKET ? 'center' : undefined, gap: 20, alignItems: 'stretch' }}>
+          {VISIBLE_PAKET.map(p => (
             <div
               key={p.tier}
               style={{
@@ -204,7 +220,7 @@ export default function StyrelseguidePage() {
               <h3 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 21, fontWeight: 600, color: NAVY, marginBottom: 6, marginTop: p.populär ? 6 : 0 }}>{p.namn}</h3>
               <div style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 34, fontWeight: 600, color: TEAL, letterSpacing: '-0.5px', marginBottom: 20 }}>{p.pris}</div>
               <ul style={{ listStyle: 'none', margin: '0 0 24px', padding: 0, display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
-                {p.innehall.map(i => (
+                {[...p.innehall, ...(p.tier === 'paket1' ? ['Juristgranskad · ~89 sidor'] : [])].map(i => (
                   <li key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14.5, color: '#3B4F5C', lineHeight: 1.5 }}>
                     <span style={{ color: GOLD, fontWeight: 700, flexShrink: 0 }}>✓</span>
                     {i}

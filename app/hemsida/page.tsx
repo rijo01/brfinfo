@@ -78,13 +78,14 @@ export default function HemsidaPage() {
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 17, lineHeight: 1.65, maxWidth: 540, margin: '0 auto 36px' }}>
             Egen adress, styrelsesidor, dokumentarkiv och felanmälan — byggt och skött av oss, utan att någon i styrelsen behöver vara webbexpert.
           </p>
+          {/* Guld = konvertering (boka lead). Demo-länk = sekundär/navigering. */}
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/hemsida/demo" style={{ background: '#C9932A', color: '#0F1F2D', padding: '13px 26px', borderRadius: 8, fontSize: 15, fontWeight: 600, textDecoration: 'none' }}>
+            <a href="#boka" style={{ background: '#C9932A', color: '#0F1F2D', padding: '13px 26px', borderRadius: 8, fontSize: 15, fontWeight: 600, textDecoration: 'none' }}>
+              Boka kostnadsfri genomgång →
+            </a>
+            <Link href="/hemsida/demo" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'white', padding: '13px 26px', borderRadius: 8, fontSize: 15, fontWeight: 500, textDecoration: 'none' }}>
               Se en demosida →
             </Link>
-            <a href="#boka" style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: 'white', padding: '13px 26px', borderRadius: 8, fontSize: 15, fontWeight: 500, textDecoration: 'none' }}>
-              Boka genomgång
-            </a>
           </div>
         </div>
       </section>

@@ -10,6 +10,9 @@ export default function BRFCard({ brf }: { brf: BRF }) {
   const year = bildadAr(brf.startdatum)
   const orgnr = formatOrgnr(brf.orgnr)
   const forvaltare = (brf as any).forvaltare?.replace(/^c\/o\s+/i, '').trim() || null
+  // DB-status är "Är verksam" (inte "AKTIV") → aktiva föreningar ska vara teal, inte guld.
+  const isActive = /verksam|aktiv/i.test(brf.status ?? '')
+  const statusLabel = isActive ? 'Aktiv' : (brf.status ?? '—')
 
   return (
     <Link href={`/brf/${brf.slug}`} style={{ textDecoration: 'none' }}>
@@ -31,14 +34,14 @@ export default function BRFCard({ brf }: { brf: BRF }) {
         <p style={{ fontSize: 12, color: '#8A9BAB', marginBottom: 12 }}>{orgnr}{year !== 'Okänt' && ` · Bildad ${year}`}</p>
         <div style={{ display: 'flex', gap: 20, marginBottom: 12 }}>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 500, color: brf.status === 'AKTIV' ? '#1B7C6E' : '#C9932A' }}>{brf.status === 'AKTIV' ? 'Aktiv' : (brf.status ?? '—')}</div>
             <div style={{ fontSize: 11, color: '#8A9BAB', textTransform: 'uppercase', letterSpacing: '0.3px' }}>Status</div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: isActive ? '#1B7C6E' : '#C9932A', marginTop: 2 }}>{statusLabel}</div>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, color: '#4A6070' }}>
           <span style={{ width: 6, height: 6, background: '#23A090', borderRadius: '50%', display: 'inline-block', flexShrink: 0 }} />
           <span itemProp="addressLocality">{brf.postort}</span>
-          {brf.kommun && brf.kommun !== brf.postort && <span style={{ color: '#8A9BAB' }}>· {brf.kommun}</span>}
+          {brf.kommun && brf.kommun.toLowerCase() !== brf.postort.toLowerCase() && <span style={{ color: '#8A9BAB' }}>· {brf.kommun}</span>}
         </div>
         {forvaltare && (
           <div style={{ marginTop: 10, fontSize: 11.5, color: '#6A8090', display: 'flex', alignItems: 'center', gap: 5 }}>

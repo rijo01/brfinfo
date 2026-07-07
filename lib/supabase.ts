@@ -248,6 +248,25 @@ export function slugify(name: string): string {
     .replace(/^-|-$/g, '')
 }
 
+// ── Display-only helpers (påverkar ENBART det som visas i listor) ─────────────
+// Rör ALDRIG slug/URL/routing. Slugen byggs alltid ur det råa namnet via slugify()
+// (som redan strippar snedstreck), så de här funktionerna kan aldrig ändra en URL.
+
+// Städa visningsnamnet på en förvaltare: strippa ledande/avslutande snedstreck och
+// blanksteg ("/HSB Stockholm/" → "HSB Stockholm"). slugify("/HSB Stockholm/") och
+// slugify("HSB Stockholm") ger BÅDA "hsb-stockholm" → slugen är oförändrad.
+export function displayForvaltareName(name: string): string {
+  const cleaned = name.replace(/^[\s/]+|[\s/]+$/g, '').replace(/\s{2,}/g, ' ').trim()
+  return cleaned || name
+}
+
+// Ren box-adress ("Box 203", "Box 843") utan gatunamn → dölj i listvyer. En riktig
+// gatuadress ("Rehnsg. 15") matchar inte och visas fortsatt.
+export function isBoxOnlyAddress(adress: string | null | undefined): boolean {
+  if (!adress) return false
+  return /^box\s*\d+\s*$/i.test(adress.trim())
+}
+
 export function formatOrgnr(o: string) {
   return o.length === 10 && !o.includes('-') ? `${o.slice(0, 6)}-${o.slice(6)}` : o
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { getForvaltareList } from '@/lib/supabase'
+import { getForvaltareList, displayForvaltareName } from '@/lib/supabase'
 
 export const metadata: Metadata = {
   title: 'Förvaltare — Alla förvaltningsbolag för BRF:er i Sverige',
@@ -42,7 +42,7 @@ export default async function ForvaltarePage() {
           {forvaltare.map((f, i) => (
             <Link
               key={f.slug}
-              href={`/forvaltare/${f.slug}`}
+              href={`/forvaltare/${f.slug}`} /* slug oförändrad — endast visningsnamnet städas */
               style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 padding: '14px 0',
@@ -52,7 +52,7 @@ export default async function ForvaltarePage() {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <span style={{ fontSize: 13, color: '#8A9BAB', fontFamily: 'monospace', minWidth: 32 }}>{i + 1}.</span>
-                <span style={{ fontSize: 15, fontWeight: 500, color: '#0F1F2D' }}>{f.name}</span>
+                <span style={{ fontSize: 15, fontWeight: 500, color: '#0F1F2D' }}>{displayForvaltareName(f.name)}</span>
               </div>
               <span style={{ fontSize: 13, color: '#1B7C6E', fontWeight: 500, whiteSpace: 'nowrap' }}>
                 {f.count} BRF:er →

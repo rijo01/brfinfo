@@ -108,6 +108,7 @@ export default async function HomePage() {
           <p style={{ fontSize: 15, color: '#4A6070', lineHeight: 1.7, maxWidth: 560, margin: '0 auto 24px' }}>
             Handboken <em style={{ fontStyle: 'italic' }}>Den välskötta bostadsrättsföreningen</em> ger styrelsen struktur för lägre kostnader, tryggare beslut och högre fastighetsvärde — 20 kapitel, checklistor och mallar.
           </p>
+          {/* Guld = pengavägen. Handboken är intäktsprodukten → denna CTA är sidans guldelement. */}
           <Link href="/styrelseguide" style={{ display: 'inline-block', background: '#C9932A', color: '#0F1F2D', padding: '11px 24px', borderRadius: 8, fontSize: 14, fontWeight: 500, textDecoration: 'none' }}>
             Läs mer om handboken →
           </Link>

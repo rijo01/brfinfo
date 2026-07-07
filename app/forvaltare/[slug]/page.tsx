@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound, permanentRedirect } from 'next/navigation'
 import Link from 'next/link'
-import { getForvaltareBySlug, formatOrgnr, slugify } from '@/lib/supabase'
+import { getForvaltareBySlug, formatOrgnr, slugify, isBoxOnlyAddress } from '@/lib/supabase'
 import ForvaltareKontaktForm from './ForvaltareKontaktForm'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -102,7 +102,7 @@ export default async function ForvaltareDetailPage({ params }: Props) {
       </div>
 
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 24px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 24, alignItems: 'start' }}>
+        <div className="forvaltare-detail-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 24, alignItems: 'start' }}>
 
           {/* LEFT */}
           <div>
@@ -147,7 +147,8 @@ export default async function ForvaltareDetailPage({ params }: Props) {
                     >
                       <div>
                         <span style={{ fontSize: 14, fontWeight: 500, color: '#0F1F2D' }}>{brf.namn}</span>
-                        {brf.adress && <span style={{ fontSize: 13, color: '#8A9BAB', marginLeft: 8 }}>{brf.adress}</span>}
+                        {/* Rena box-adresser ("Box 203") döljs i listvyn — de säger inget om läget. Endast display. */}
+                        {brf.adress && !isBoxOnlyAddress(brf.adress) && <span style={{ fontSize: 13, color: '#8A9BAB', marginLeft: 8 }}>{brf.adress}</span>}
                       </div>
                       <span style={{ fontSize: 12, color: '#1B7C6E', fontFamily: 'monospace' }}>{formatOrgnr(brf.orgnr)}</span>
                     </Link>

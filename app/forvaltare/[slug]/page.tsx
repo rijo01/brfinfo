@@ -164,18 +164,11 @@ export default async function ForvaltareDetailPage({ params }: Props) {
             <div style={{ ...card, background: '#F5F1E8', border: 'none' }}>
               <h2 style={{ ...cardTitle, fontSize: 16 }}>Representerar du {name}?</h2>
               <p style={{ fontSize: 13, color: '#4A6070', lineHeight: 1.6, marginBottom: 14 }}>
-                Bli partner på BRFinfo.se. Få kontaktuppgifter, logotyp och en verifierad profil synlig för tusentals styrelser.
+                Vi utvecklar ett partnerprogram för förvaltare på BRFinfo.se. Lämna en intresseanmälan så hör vi av oss när det lanseras — era behov är med och formar vad vi bygger.
               </p>
-              <div style={{ fontSize: 13, color: '#6A8090', marginBottom: 4 }}>Partnerskap från</div>
-              <div style={{ fontSize: 28, fontFamily: 'Fraunces, Georgia, serif', fontWeight: 400, color: '#0F1F2D', marginBottom: 16 }}>
-                490 <span style={{ fontSize: 14, color: '#6A8090' }}>kr/mån</span>
-              </div>
-              <ul style={{ fontSize: 13, color: '#4A6070', lineHeight: 2, paddingLeft: 16, marginBottom: 16 }}>
-                <li>Verifierad profil med logotyp</li>
-                <li>Kontaktuppgifter synliga</li>
-                <li>Direktlänk till er webbplats</li>
-                <li>Prioriterad listning</li>
-              </ul>
+              <Link href="/forvaltare-partner" style={{ display: 'inline-block', background: '#C9932A', color: '#0F1F2D', padding: '10px 20px', borderRadius: 8, fontSize: 13.5, fontWeight: 500, textDecoration: 'none' }}>
+                Läs mer →
+              </Link>
             </div>
 
             {/* Contact Form */}

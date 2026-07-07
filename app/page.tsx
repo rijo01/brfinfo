@@ -130,34 +130,20 @@ export default async function HomePage() {
           </Link>
         </div>
 
-        {/* FOR BUSINESS */}
-        <div className="home-business-grid" style={{ background: '#0F1F2D', borderRadius: 16, padding: '40px 48px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, alignItems: 'center', marginBottom: 60 }}>
-          <div>
-            <h2 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 28, fontWeight: 300, color: 'white', letterSpacing: '-0.5px', marginBottom: 12, lineHeight: 1.2 }}>
-              Är du <em style={{ color: '#E8B84B', fontStyle: 'normal' }}>förvaltningsbolag</em> eller hantverkare?
-            </h2>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14, lineHeight: 1.6, marginBottom: 24 }}>
-              Nå BRF-styrelser som aktivt söker efter era tjänster. Vi matchar er med föreningar baserat på geografi och behov.
-            </p>
-            <Link href="/claima" style={{ display: 'inline-block', background: '#C9932A', color: '#0F1F2D', padding: '11px 24px', borderRadius: 8, fontSize: 14, fontWeight: 500, textDecoration: 'none' }}>
-              Kom igång →
-            </Link>
+        {/* FOR BUSINESS — förvaltare */}
+        <div style={{ background: '#0F1F2D', borderRadius: 16, padding: '40px 48px', marginBottom: 60, textAlign: 'center' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(201,147,42,0.12)', border: '1px solid rgba(201,147,42,0.3)', padding: '5px 14px', borderRadius: 20, fontSize: 12, color: '#E8B84B', fontWeight: 500, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: 18 }}>
+            För förvaltare
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {[
-              { name: 'Grundlisting', desc: 'Synlighet i sökresultat', price: 'Gratis', featured: false },
-              { name: 'BRF Premium', desc: 'Verifierad profil + leads', price: '490 kr/mån', featured: true },
-              { name: 'Förvaltarpartner', desc: 'Exklusiva BRF-leads', price: '990 kr/mån', featured: false },
-            ].map(t => (
-              <div key={t.name} style={{ background: t.featured ? 'rgba(201,147,42,0.12)' : 'rgba(255,255,255,0.06)', border: `1px solid ${t.featured ? 'rgba(201,147,42,0.3)' : 'rgba(255,255,255,0.1)'}`, borderRadius: 10, padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 500, color: t.featured ? '#E8B84B' : 'white' }}>{t.name}</div>
-                  <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>{t.desc}</div>
-                </div>
-                <div style={{ fontFamily: 'Fraunces, serif', fontSize: 16, color: t.featured ? '#E8B84B' : 'white' }}>{t.price}</div>
-              </div>
-            ))}
-          </div>
+          <h2 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 28, fontWeight: 300, color: 'white', letterSpacing: '-0.5px', marginBottom: 12, lineHeight: 1.2 }}>
+            Är du <em style={{ color: '#E8B84B', fontStyle: 'normal' }}>förvaltningsbolag?</em>
+          </h2>
+          <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 15, lineHeight: 1.7, maxWidth: 560, margin: '0 auto 24px' }}>
+            Vi utvecklar ett partnerprogram för förvaltare som vill synas på Sveriges BRF-register. Lämna en intresseanmälan så hör vi av oss när det lanseras.
+          </p>
+          <Link href="/forvaltare-partner" style={{ display: 'inline-block', background: '#C9932A', color: '#0F1F2D', padding: '11px 24px', borderRadius: 8, fontSize: 14, fontWeight: 500, textDecoration: 'none' }}>
+            Läs mer om partnerprogrammet →
+          </Link>
         </div>
 
         {/* SEO TEXT */}

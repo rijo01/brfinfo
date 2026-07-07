@@ -76,12 +76,3 @@ body {
   .cookie-banner-row { flex-direction: column; align-items: stretch !important; }
   .cookie-banner-actions { width: 100%; flex-direction: column; }
 }
-
-/* Home "för företag"-sektion: en kolumn + mindre padding på små skärmar */
-@media (max-width: 720px) {
-  .home-business-grid {
-    grid-template-columns: 1fr !important;
-    padding: 32px 24px !important;
-    gap: 28px !important;
-  }
-}

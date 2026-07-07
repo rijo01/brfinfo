@@ -1,13 +1,7 @@
 'use client'
 import { useState } from 'react'
 
-const PACKAGES = [
-  { id: 'bas', label: 'Bas — 490 kr/mån' },
-  { id: 'partner', label: 'Partner — 990 kr/mån' },
-  { id: 'premium', label: 'Premium — 2 490 kr/mån' },
-] as const
-
-export default function PartnerForm({ defaultPackage = 'partner' }: { defaultPackage?: string }) {
+export default function PartnerForm() {
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [err, setErr] = useState<string | null>(null)
@@ -16,7 +10,6 @@ export default function PartnerForm({ defaultPackage = 'partner' }: { defaultPac
     namn: '',
     email: '',
     telefon: '',
-    paket: defaultPackage,
     meddelande: '',
   })
 
@@ -27,13 +20,12 @@ export default function PartnerForm({ defaultPackage = 'partner' }: { defaultPac
     try {
       const formData = new FormData()
       formData.append('access_key', '8007467a-7cc3-47b6-828a-72a6c603e5fb')
-      formData.append('subject', `Ny partnerförfrågan: ${form.foretag}`)
-      formData.append('from_name', 'BRFinfo Partner-formulär')
+      formData.append('subject', 'Partnerprogram – intresseanmälan')
+      formData.append('from_name', 'BRFinfo Partnerprogram')
       formData.append('foretag', form.foretag)
       formData.append('namn', form.namn)
       formData.append('email', form.email)
       formData.append('telefon', form.telefon)
-      formData.append('paket', form.paket)
       formData.append('meddelande', form.meddelande)
       const res = await fetch('https://api.web3forms.com/submit', { method: 'POST', body: formData })
       const data = await res.json().catch(() => ({}))
@@ -104,10 +96,10 @@ export default function PartnerForm({ defaultPackage = 'partner' }: { defaultPac
             marginBottom: 6,
           }}
         >
-          Tack — vi har tagit emot din förfrågan
+          Tack — vi har tagit emot din intresseanmälan
         </h3>
         <p style={{ fontSize: 14, color: '#4A6070', lineHeight: 1.6 }}>
-          Vi återkommer med en personlig demo inom 1 arbetsdag.
+          Vi hör av oss när partnerprogrammet lanseras.
         </p>
       </div>
     )
@@ -165,24 +157,10 @@ export default function PartnerForm({ defaultPackage = 'partner' }: { defaultPac
       </div>
 
       <div>
-        <label style={lbl}>Önskat paket</label>
-        <select
-          value={form.paket}
-          onChange={e => setForm({ ...form, paket: e.target.value })}
-          style={{ ...inp, cursor: 'pointer', appearance: 'none', backgroundImage: 'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'8\' viewBox=\'0 0 12 8\' fill=\'none\'><path d=\'M1 1L6 6L11 1\' stroke=\'%236A8090\' stroke-width=\'1.5\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/></svg>")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center', paddingRight: 36 }}
-        >
-          {PACKAGES.map(p => (
-            <option key={p.id} value={p.id}>{p.label}</option>
-          ))}
-          <option value="oklart">Vet inte än — vill prata först</option>
-        </select>
-      </div>
-
-      <div>
         <label style={lbl}>Meddelande</label>
         <textarea
           rows={4}
-          placeholder="Hur många BRF:er förvaltar ni? Vilka regioner? Vad är viktigast för er?"
+          placeholder="Berätta gärna om er verksamhet och vad ni skulle vilja se i ett partnerprogram."
           value={form.meddelande}
           onChange={e => setForm({ ...form, meddelande: e.target.value })}
           style={{ ...inp, resize: 'vertical', minHeight: 96 }}
@@ -222,11 +200,11 @@ export default function PartnerForm({ defaultPackage = 'partner' }: { defaultPac
           transition: 'background 0.15s',
         }}
       >
-        {loading ? 'Skickar…' : 'Boka demo →'}
+        {loading ? 'Skickar…' : 'Skicka intresseanmälan →'}
       </button>
 
       <p style={{ fontSize: 12, color: '#8A9BAB', textAlign: 'center', marginTop: 2 }}>
-        Inga förpliktelser. Personlig demo inom 24 timmar.
+        Ingen förpliktelse. Vi hör av oss när programmet lanseras.
       </p>
     </form>
   )

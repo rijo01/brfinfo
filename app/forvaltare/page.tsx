@@ -67,10 +67,10 @@ export default async function ForvaltarePage() {
             Är du förvaltare?
           </h2>
           <p style={{ fontSize: 14, color: '#4A6070', lineHeight: 1.6, marginBottom: 16 }}>
-            Bli partner på BRFinfo.se och nå tusentals styrelser. Kontaktuppgifter, logotyp och direktlänk till era BRF:er.
+            Vi utvecklar ett partnerprogram för förvaltare på BRFinfo.se. Lämna en intresseanmälan så hör vi av oss när det lanseras.
           </p>
           <Link href="/forvaltare-partner" style={{ display: 'inline-block', background: '#C9932A', color: '#0F1F2D', padding: '12px 28px', borderRadius: 8, fontSize: 15, fontWeight: 500, textDecoration: 'none' }}>
-            Bli partner — från 490 kr/mån
+            Läs mer om partnerprogrammet →
           </Link>
         </div>
       </div>

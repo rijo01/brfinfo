@@ -58,9 +58,6 @@ export default function ForvaltareKontaktForm({ forvaltareName }: { forvaltareNa
           {loading ? 'Skickar...' : 'Skicka förfrågan'}
         </button>
       </div>
-      <p style={{ fontSize: 11, color: '#8A9BAB', marginTop: 8, textAlign: 'center' }}>
-        Priser: 490 kr/mån (bas), 990 kr/mån (partner), 2 490 kr/mån (premium)
-      </p>
     </form>
   )
 }

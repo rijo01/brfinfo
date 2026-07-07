@@ -4,7 +4,7 @@ import PartnerForm from './PartnerForm'
 import { getBRFCount } from '@/lib/supabase'
 
 export const metadata: Metadata = {
-  title: 'Partnerprogram för förvaltare — under utveckling | BRFinfo.se',
+  title: 'Partnerprogram för förvaltare — under utveckling',
   description:
     'Vi utvecklar ett partnerprogram för förvaltningsbolag på BRFinfo.se, Sveriges BRF-register med 26 795 föreningar. Lämna en intresseanmälan så hör vi av oss när det lanseras.',
   alternates: { canonical: 'https://brfinfo.se/forvaltare-partner' },

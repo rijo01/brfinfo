@@ -6,6 +6,7 @@ import { getEnergiByOrgnr } from '@/lib/energi'
 import { EnergiFakta, EnergiEjRegistrerad } from '@/components/EnergiFakta'
 import EnergiLeadCTA from '@/components/EnergiLeadCTA'
 import StickyClaimBar from '@/components/StickyClaimBar'
+import AdSlot from '@/components/AdSlot'
 
 function toTitleCase(str: string): string {
   return str.toLowerCase().replace(/(?:^|\s|[-/])\S/g, (c) => c.toUpperCase())
@@ -187,6 +188,9 @@ export default async function BRFPage({ params }: Props) {
                 </div>
               ))}
             </div>
+
+            {/* Annons — sist i innehållskolumnen, långt under fold */}
+            <AdSlot />
           </div>
 
           {/* SIDEBAR */}

@@ -1,5 +1,6 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
+import { useCookieConsent } from '@/lib/useCookieConsent'
 
 const CLIENT = 'ca-pub-4694490733358572'
 const SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT_BRF
@@ -25,18 +26,9 @@ declare global {
  * med AdSenseScript som inte ens laddar adsbygoogle.js dessförinnan.
  */
 export default function AdSlot() {
-  const [consented, setConsented] = useState(false)
+  const consented = useCookieConsent()
   const insRef = useRef<HTMLModElement>(null)
   const pushed = useRef(false)
-
-  useEffect(() => {
-    const check = () => {
-      try { setConsented(localStorage.getItem('cookie-consent') === 'all') } catch {}
-    }
-    check()
-    window.addEventListener('cookie-consent-change', check)
-    return () => window.removeEventListener('cookie-consent-change', check)
-  }, [])
 
   useEffect(() => {
     if (!consented || !SLOT || pushed.current) return

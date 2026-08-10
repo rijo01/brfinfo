@@ -1,25 +1,24 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { getEnergiByKommun } from '@/lib/energi'
+import { notFound } from 'next/navigation'
+import { getEnergiByKommun, harEnergiData, ENERGIKLASS_STADER } from '@/lib/energi'
 import EnergiKatalogTabell from '@/components/EnergiKatalogTabell'
 
 type Props = { params: Promise<{ stad: string }> }
 
-// Slug → kommunnamn (som det står i foretag.kommun). Pilot: Stockholm.
-const STAD_KOMMUN: Record<string, string> = {
-  stockholm: 'Stockholm',
-  goteborg: 'Göteborg',
-  malmo: 'Malmö',
-  uppsala: 'Uppsala',
+export function generateStaticParams() {
+  return Object.keys(ENERGIKLASS_STADER).map((stad) => ({ stad }))
 }
 
-function kommunFromSlug(slug: string): string {
-  return STAD_KOMMUN[slug] ?? slug.charAt(0).toUpperCase() + slug.slice(1)
-}
+// Utan revalidering skulle 404:en för en tom kommun bakas in statiskt vid build
+// och ligga kvar även efter att enrichern läst in data — sidan skulle inte komma
+// tillbaka förrän någon råkade deploya. En timme räcker gott för katalogdata.
+export const revalidate = 3600
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { stad } = await params
-  const kommun = kommunFromSlug(stad)
+  const kommun = ENERGIKLASS_STADER[stad]
+  if (!kommun) return { title: 'Sidan hittades inte', robots: { index: false, follow: false } }
   return {
     title: `Energiklass för BRF:er i ${kommun} — energideklarationer`,
     description: `Bostadsrättsföreningar i ${kommun} med registrerad energideklaration. Jämför energiklass A–G och primärenergital. Data från Boverket.`,
@@ -29,8 +28,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function EnergiklassStadPage({ params }: Props) {
   const { stad } = await params
-  const kommun = kommunFromSlug(stad)
-  const poster = await getEnergiByKommun(kommun, 500)
+  const kommun = ENERGIKLASS_STADER[stad]
+  if (!kommun) notFound()
+
+  // Bekräftat tom kommun → 404 i stället för en tunn sida med rubrik och noll
+  // innehåll. `null` betyder att databasen inte svarade; då renderar vi det
+  // tomma läget nedan hellre än att slänga bort sidan på en tillfällig störning.
+  const harData = await harEnergiData(kommun)
+  if (harData === false) notFound()
+
+  const poster = harData ? await getEnergiByKommun(kommun, 500) : []
 
   return (
     <>
@@ -60,7 +67,7 @@ export default async function EnergiklassStadPage({ params }: Props) {
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 16, lineHeight: 1.6, maxWidth: 600 }}>
             {poster.length > 0
               ? `${poster.length.toLocaleString('sv-SE')} föreningar med registrerad energideklaration. Sortera på energiklass eller primärenergital.`
-              : 'Här visas föreningar med registrerad energideklaration så snart datan är inläst.'}
+              : 'Listan kunde inte hämtas just nu. Försök igen om en stund.'}
           </p>
         </div>
       </section>
@@ -70,7 +77,7 @@ export default async function EnergiklassStadPage({ params }: Props) {
           <EnergiKatalogTabell poster={poster} />
         ) : (
           <div style={{ background: 'white', border: '1px dashed rgba(15,31,45,0.15)', borderRadius: 12, padding: 40, textAlign: 'center', color: '#6A8090' }}>
-            <p style={{ marginBottom: 12, fontSize: 15 }}>Inga energideklarationer inlästa för {kommun} ännu.</p>
+            <p style={{ marginBottom: 12, fontSize: 15 }}>Energideklarationerna för {kommun} kunde inte hämtas just nu.</p>
             <Link href="/energideklaration" style={{ color: '#1B7C6E', textDecoration: 'none', fontWeight: 500 }}>Läs om energideklarationer för BRF:er →</Link>
           </div>
         )}

@@ -109,11 +109,6 @@ export default function EnergideklarationPage() {
           ))}
         </div>
 
-        <div style={{ ...card, background: 'rgba(27,124,110,0.05)', borderColor: 'rgba(27,124,110,0.2)' }}>
-          <h2 style={{ ...h2, fontSize: 18 }}>Se energiklass per stad</h2>
-          <p style={{ ...p, marginBottom: 8 }}>Bläddra bland bostadsrättsföreningar med registrerad energideklaration:</p>
-          <Link href="/energiklass/stockholm" style={{ color: '#1B7C6E', textDecoration: 'none', fontWeight: 500, fontSize: 15 }}>Energiklass för BRF:er i Stockholm →</Link>
-        </div>
       </div>
     </>
   )

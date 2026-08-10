@@ -1,9 +1,18 @@
 import { MetadataRoute } from 'next'
+import { energiklassSlugsMedData } from '@/lib/energi'
 
 export const dynamic = 'force-dynamic'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = 'https://brfinfo.se'
+
+  // Bara energiklass-städer som faktiskt har matchade deklarationer. Tidigare låg
+  // /energiklass/stockholm hårdkodad här trots att den renderade en tom sida —
+  // vi bjöd alltså in Google till tunt innehåll. Listan fyller sig själv när
+  // enrichern läst in data.
+  const energiklassUrls: MetadataRoute.Sitemap = (await energiklassSlugsMedData()).map(slug => ({
+    url: `${base}/energiklass/${slug}`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.7,
+  }))
 
   const statics: MetadataRoute.Sitemap = [
     { url: base, lastModified: new Date(), changeFrequency: 'daily', priority: 1 },
@@ -13,13 +22,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/forvaltare-partner`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
     { url: `${base}/hemsida`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
     { url: `${base}/energideklaration`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${base}/energiklass/stockholm`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
     { url: `${base}/kontakt`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
     { url: `${base}/integritet`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
     // Måste matcha de kuraterade städerna i app/stad/[city]/page.tsx (META) — annars tunna/saknade sidor.
     ...['stockholm','goteborg','malmo','uppsala','linkoping','orebro','vasteras','helsingborg','norrkoping','jonkoping','gavle','boras','eskilstuna','karlstad','lulea','sundsvall','trollhattan','halmstad','ostersund','falun','vaxjo','umea','lund','borlange','sodertalje','kalmar'].map(c => ({
       url: `${base}/stad/${c}`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.8,
     })),
+    ...energiklassUrls,
   ]
 
   try {

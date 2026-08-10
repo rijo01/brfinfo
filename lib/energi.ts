@@ -22,6 +22,48 @@ export type Energideklaration = {
   match_metod: string | null
 }
 
+// Kuraterade städer för /energiklass/[stad]. Routen fick tidigare svara på vilken
+// slug som helst — kommunnamnet gissades fram genom att versalisera slugen — så
+// /energiklass/vadsomhelst gav 200 med canonical och titel. Ett obegränsat
+// utrymme av tunna sidor. Allt utanför den här listan 404:ar nu.
+export const ENERGIKLASS_STADER: Record<string, string> = {
+  stockholm: 'Stockholm',
+  goteborg: 'Göteborg',
+  malmo: 'Malmö',
+  uppsala: 'Uppsala',
+}
+
+/**
+ * Finns minst en matchad energideklaration för kommunen?
+ *
+ * Returnerar null när frågan inte gick att besvara (DB-fel). Anropare ska då
+ * INTE 404:a — annars kan en tillfällig databasstörning radera riktiga sidor ur
+ * indexet. Bara ett bekräftat `false` betyder "sidan har inget innehåll".
+ */
+export async function harEnergiData(kommun: string): Promise<boolean | null> {
+  try {
+    const { data, error } = await supabase
+      .from('energideklarationer')
+      .select('orgnr')
+      .eq('kommun', kommun)
+      .eq('matchad', true)
+      .limit(1)
+    if (error) return null
+    return (data?.length ?? 0) > 0
+  } catch {
+    return null
+  }
+}
+
+/** Slugar för de kuraterade städer som faktiskt har data — används av sitemap. */
+export async function energiklassSlugsMedData(): Promise<string[]> {
+  const slugs = Object.keys(ENERGIKLASS_STADER)
+  const traffar = await Promise.all(
+    slugs.map(async (slug) => ((await harEnergiData(ENERGIKLASS_STADER[slug])) === true ? slug : null)),
+  )
+  return traffar.filter((s): s is string => s !== null)
+}
+
 // Färg per energiklass (A bäst → G sämst). Matchar Boverkets skala visuellt.
 const KLASS_FARG: Record<string, string> = {
   A0: '#1B7C6E', A: '#2E9E5B', B: '#7CB342', C: '#C0CA33',

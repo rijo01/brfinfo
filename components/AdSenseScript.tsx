@@ -1,21 +1,10 @@
 'use client'
 import Script from 'next/script'
-import { useEffect, useState } from 'react'
+import { useCookieConsent } from '@/lib/useCookieConsent'
 
-// Loads Google AdSense only after the user has accepted all cookies.
-// Listens for 'cookie-consent-change' so accepting in the banner loads it
-// without a full page reload.
+// Laddar Google AdSense först efter att besökaren accepterat alla cookies.
 export default function AdSenseScript() {
-  const [consented, setConsented] = useState(false)
-
-  useEffect(() => {
-    const check = () => {
-      try { setConsented(localStorage.getItem('cookie-consent') === 'all') } catch {}
-    }
-    check()
-    window.addEventListener('cookie-consent-change', check)
-    return () => window.removeEventListener('cookie-consent-change', check)
-  }, [])
+  const consented = useCookieConsent()
 
   if (!consented) return null
 

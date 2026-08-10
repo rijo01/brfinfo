@@ -175,8 +175,14 @@ def already_processed_orgnrs():
     seen = set()
     offset = 0
     while True:
+        # ORDER BY krävs för stabil offset-paginering. Utan order kör Postgres
+        # parallell seq-scan vars radordning skiljer sig mellan range-requesten
+        # → fönstren överlappar/hoppar → hål i "redan bearbetad"-mängden. Samma
+        # fel är dokumenterat som verifierat i app/sitemap.ts. Hål här betyder
+        # att redan klara BRF:er bearbetas om och krockar med de unika indexen.
+        # orgnr är indexerat (energideklarationer_orgnr_idx), så sorten är billig.
         url = (f"{SUPABASE_URL}/rest/v1/energideklarationer"
-               f"?select=orgnr&limit={BATCH_SIZE}&offset={offset}")
+               f"?select=orgnr&order=orgnr&limit={BATCH_SIZE}&offset={offset}")
         try:
             data = http_request(url, headers=supabase_headers())
         except HTTPError as e:
@@ -198,11 +204,27 @@ def delete_for_orgnr(orgnr):
     http_request(url, method="DELETE", headers=supabase_headers({"Prefer": "return=minimal"}))
 
 def insert_rows(rows):
+    """Skriver deklarationsrader. Returnerar False om de redan fanns.
+
+    Schemat har unika index (orgnr+boverket_id för träffar, orgnr för
+    ingen-träff-rader) så att omkörning inte skapar dubbletter. Ett om-inlägg
+    ger då 409 från PostgREST — vilket är idempotens, inte ett fel: raden finns
+    redan. Utan den här hanteringen kastade urlopen HTTPError rakt ut ur
+    huvudloopen och körningen dog mitt i, med förbrukad API-budget för dagen.
+    """
     if not rows:
-        return
+        return True
     url = f"{SUPABASE_URL}/rest/v1/energideklarationer"
-    http_request(url, method="POST", data=rows,
-                 headers=supabase_headers({"Prefer": "return=minimal"}))
+    try:
+        http_request(url, method="POST", data=rows,
+                     headers=supabase_headers({"Prefer": "return=minimal"}))
+        return True
+    except HTTPError as e:
+        if e.code == 409:
+            log.warning("  409 — rad(er) fanns redan för orgnr %s, hoppar över.",
+                        rows[0].get("orgnr"))
+            return False
+        raise
 
 # ── Boverket-anrop ─────────────────────────────────────────────────────────────
 def boverket_query(kommun, adress):

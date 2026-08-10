@@ -3,9 +3,11 @@ import { useEffect, useRef, useState } from 'react'
 import { track } from '@/lib/gtag'
 
 type Props = {
-  brfNamn: string
-  orgnr: string
-  kommun: string | null
+  // Utelämnas på guidesidor som inte handlar om en enskild förening — API:t
+  // sparar orgnr/brf_namn som null och `kalla` skiljer källorna åt.
+  brfNamn?: string
+  orgnr?: string
+  kommun?: string | null
   energiklass?: string | null
   kalla?: string
 }
@@ -21,7 +23,9 @@ const INTRESSEN = [
 const inp: React.CSSProperties = { width: '100%', border: '1px solid rgba(15,31,45,0.15)', borderRadius: 8, padding: '11px 14px', fontSize: 14, color: '#1A2B38', fontFamily: 'inherit', outline: 'none', background: 'white', boxSizing: 'border-box' }
 const lbl: React.CSSProperties = { display: 'block', fontSize: 11, color: '#6A8090', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.4px' }
 
-export default function EnergiLeadCTA({ brfNamn, orgnr, kommun, energiklass, kalla = 'brf-sida' }: Props) {
+export default function EnergiLeadCTA({ brfNamn, orgnr, kommun = null, energiklass, kalla = 'brf-sida' }: Props) {
+  // Generisk formulering när CTA:n inte sitter på en föreningssida.
+  const namn = brfNamn ?? 'er förening'
   const [open, setOpen] = useState(false)
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -38,7 +42,7 @@ export default function EnergiLeadCTA({ brfNamn, orgnr, kommun, energiklass, kal
       for (const e of entries) {
         if (e.isIntersecting && !viewed.current) {
           viewed.current = true
-          track('energi_cta_view', { orgnr, kommun: kommun ?? '', energiklass: energiklass ?? '' })
+          track('energi_cta_view', { orgnr: orgnr ?? '', kommun: kommun ?? '', energiklass: energiklass ?? '' })
           io.disconnect()
         }
       }
@@ -49,7 +53,7 @@ export default function EnergiLeadCTA({ brfNamn, orgnr, kommun, energiklass, kal
 
   function openForm() {
     setOpen(true)
-    track('energi_cta_click', { orgnr, kommun: kommun ?? '', energiklass: energiklass ?? '' })
+    track('energi_cta_click', { orgnr: orgnr ?? '', kommun: kommun ?? '', energiklass: energiklass ?? '' })
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -61,7 +65,7 @@ export default function EnergiLeadCTA({ brfNamn, orgnr, kommun, energiklass, kal
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          orgnr, brf_namn: brfNamn, kommun,
+          orgnr: orgnr ?? null, brf_namn: brfNamn ?? null, kommun,
           intresse: form.intresse,
           kontakt_email: form.email,
           kontakt_telefon: form.telefon,
@@ -72,7 +76,7 @@ export default function EnergiLeadCTA({ brfNamn, orgnr, kommun, energiklass, kal
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || 'Något gick fel')
-      track('energi_lead_submit', { orgnr, kommun: kommun ?? '', intresse: form.intresse })
+      track('energi_lead_submit', { orgnr: orgnr ?? '', kommun: kommun ?? '', intresse: form.intresse })
       setSent(true)
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'Kunde inte skicka. Försök igen.')
@@ -95,7 +99,7 @@ export default function EnergiLeadCTA({ brfNamn, orgnr, kommun, energiklass, kal
             Få offert på energiåtgärder för föreningen
           </h2>
           <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, marginBottom: 16, maxWidth: 480 }}>
-            Vill styrelsen sänka energikostnaderna? Få kostnadsfria offerter på energikartläggning, solceller, värmepump eller fönsterbyte — anpassat efter {brfNamn}.
+            Vill styrelsen sänka energikostnaderna? Få kostnadsfria offerter på energikartläggning, solceller, värmepump eller fönsterbyte — anpassat efter {namn}.
           </p>
           <button onClick={openForm} style={{ background: '#C9932A', color: '#0F1F2D', border: 'none', padding: '12px 22px', borderRadius: 8, fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
             Få offert på energiåtgärder →
@@ -103,7 +107,7 @@ export default function EnergiLeadCTA({ brfNamn, orgnr, kommun, energiklass, kal
         </div>
       ) : (
         <form onSubmit={handleSubmit}>
-          <h2 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 20, fontWeight: 400, marginBottom: 4 }}>Få offert för {brfNamn}</h2>
+          <h2 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 20, fontWeight: 400, marginBottom: 4 }}>Få offert för {namn}</h2>
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', marginBottom: 16 }}>Kostnadsfritt och utan förbindelse.</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 520 }}>
             <div>

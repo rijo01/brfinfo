@@ -56,7 +56,12 @@ export function EnergiFakta({ d }: { d: Energideklaration }) {
         </div>
       ))}
       <p style={{ fontSize: 12, color: '#8A9BAB', marginTop: 14, lineHeight: 1.5 }}>
-        Källa: <a href="https://www.boverket.se/sv/om-boverket/oppna-data/publikt-api-for-energideklarationer/" target="_blank" rel="noopener noreferrer" style={{ color: '#1B7C6E', textDecoration: 'none' }}>Boverkets energideklarationsregister</a>. <Link href="/energideklaration" style={{ color: '#1B7C6E', textDecoration: 'none' }}>Vad betyder detta?</Link>
+        Källa: <a href="https://www.boverket.se/sv/om-boverket/oppna-data/publikt-api-for-energideklarationer/" target="_blank" rel="noopener noreferrer" style={{ color: '#1B7C6E', textDecoration: 'none' }}>Boverkets energideklarationsregister</a>.{' '}
+        {/* Beskrivande ankartext i stället för "Vad betyder detta?" — alla
+            föreningssidor länkar hit, så ankaret är sidans största signal. */}
+        <Link href="/energideklaration" style={{ color: '#1B7C6E', textDecoration: 'none' }}>
+          {d.energiklass ? `Vad betyder energiklass ${d.energiklass.toUpperCase()}?` : 'Vad betyder energiklassen?'}
+        </Link>
       </p>
     </div>
   )
@@ -67,7 +72,7 @@ export function EnergiEjRegistrerad() {
     <div style={{ ...card, borderStyle: 'dashed', background: 'rgba(15,31,45,0.02)' }}>
       <h2 style={cardTitle}>Energideklaration</h2>
       <p style={{ fontSize: 14, color: '#6A8090', lineHeight: 1.6 }}>
-        Energideklaration ej registrerad för denna förening i vårt urval. <Link href="/energideklaration" style={{ color: '#1B7C6E', textDecoration: 'none' }}>Läs om energideklarationer för BRF:er →</Link>
+        Energideklaration ej registrerad för denna förening i vårt urval. <Link href="/energideklaration" style={{ color: '#1B7C6E', textDecoration: 'none' }}>Regler och energiklass A–G för BRF →</Link>
       </p>
     </div>
   )

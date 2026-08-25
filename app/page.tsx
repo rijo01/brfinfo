@@ -2,10 +2,12 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import SearchBox from '@/components/SearchBox'
 import BRFCard from '@/components/BRFCard'
-import { getFeaturedBRFs, getBRFCount } from '@/lib/supabase'
+import { getFeaturedBRFs } from '@/lib/supabase'
 
 export const metadata: Metadata = {
-  title: 'BRFinfo.se — Sök bland 26 795 bostadsrättsföreningar i Sverige',
+  // Rotsegmentets egen sida får inte layoutens '%s | BRFinfo.se'-mall påklistrad,
+  // så varumärket står här. 49 tkn — ryms, till skillnad från den gamla på 62.
+  title: 'Sök BRF — org.nr, adress och kontakt | BRFinfo.se',
   description: 'Hitta styrelseinfo, avgifter och kontaktuppgifter för alla BRF:er i Sverige. Gratis register med data från Bolagsverket.',
   alternates: { canonical: 'https://brfinfo.se' },
 }
@@ -28,8 +30,12 @@ const CITIES = [
 
 export default async function HomePage() {
   const featured = await getFeaturedBRFs(6)
-  const brfCount = await getBRFCount()
-  const brfCountLabel = brfCount != null ? brfCount.toLocaleString('sv-SE') : '26 795'
+  // Exakt antal krävde en COUNT(*) över hela foretag utan indexerat filter: 28,2 s
+  // uppmätt, dvs. den timeoutade i produktion och föll tillbaka på strängen
+  // '26 795' — som dessutom var 2 617 för lågt (faktiskt 29 412 per 2026-08-25).
+  // En 28-sekundersquery i renderingsvägen för en siffra som ändå inte stämde är
+  // inte värd att ha. "över 29 000" förblir sant medan registret växer.
+  const brfCountLabel = 'över 29 000'
 
   return (
     <>
@@ -44,7 +50,7 @@ export default async function HomePage() {
         <div style={{ position: 'relative', maxWidth: 720, margin: '0 auto' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(201,147,42,0.12)', border: '1px solid rgba(201,147,42,0.25)', padding: '5px 14px', borderRadius: 20, fontSize: 12, color: '#E8B84B', fontWeight: 500, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: 24 }}>
             <span style={{ width: 6, height: 6, background: '#E8B84B', borderRadius: '50%', display: 'inline-block' }} />
-            26 795 bostadsrättsföreningar
+            över 29 000 bostadsrättsföreningar
           </div>
           <h1 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 'clamp(34px,6vw,58px)', fontWeight: 300, color: 'white', lineHeight: 1.1, letterSpacing: '-1.5px', marginBottom: 20 }}>
             Sveriges mest kompletta{' '}
@@ -154,7 +160,7 @@ export default async function HomePage() {
           </p>
           <h2 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 22, fontWeight: 400, color: '#0F1F2D', marginBottom: 12, marginTop: 28 }}>Vad är en bostadsrättsförening?</h2>
           <p style={{ fontSize: 15, color: '#4A6070', lineHeight: 1.7 }}>
-            En bostadsrättsförening (BRF) är en ekonomisk förening som äger en fastighet och upplåter lägenheter med bostadsrätt till sina medlemmar. I Sverige finns det drygt 26 000 registrerade BRF:er.
+            En bostadsrättsförening (BRF) är en ekonomisk förening som äger en fastighet och upplåter lägenheter med bostadsrätt till sina medlemmar. I Sverige finns det över 29 000 registrerade BRF:er.
           </p>
         </section>
       </div>

@@ -1,12 +1,11 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import PartnerForm from './PartnerForm'
-import { getBRFCount } from '@/lib/supabase'
 
 export const metadata: Metadata = {
   title: 'Partnerprogram för förvaltare — under utveckling',
   description:
-    'Vi utvecklar ett partnerprogram för förvaltningsbolag på BRFinfo.se, Sveriges BRF-register med 26 795 föreningar. Lämna en intresseanmälan så hör vi av oss när det lanseras.',
+    'Vi bygger ett partnerprogram för förvaltare på Sveriges BRF-register med över 29 000 föreningar. Lämna en intresseanmälan så hör vi av oss vid lansering.',
   alternates: { canonical: 'https://brfinfo.se/forvaltare-partner' },
   openGraph: {
     title: 'Partnerprogram för förvaltare — under utveckling',
@@ -29,8 +28,8 @@ const colors = {
 }
 
 export default async function ForvaltarePartnerPage() {
-  const brfCount = await getBRFCount()
-  const brfCountLabel = brfCount != null ? brfCount.toLocaleString('sv-SE') : '26 795'
+  // Samma skäl som på startsidan: getBRFCount() tog 28,2 s och timeoutade.
+  const brfCountLabel = 'över 29 000'
   return (
     <>
       {/* HERO */}

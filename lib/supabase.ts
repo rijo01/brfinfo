@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { unstable_cache } from 'next/cache'
+import { cache } from 'react'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://placeholder.supabase.co'
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'placeholder'
@@ -82,7 +83,10 @@ export async function getBRFsByCity(city: string, limit = 30): Promise<BRF[]> {
   return data as BRF[]
 }
 
-export async function getBRFCountByCity(city: string): Promise<number | null> {
+// React-cache: generateMetadata och sidkomponenten renderas i SAMMA request och
+// behöver båda antalet. Utan memoisering hade metadata-mallen dubblerat
+// count-queryn per stad. Med den körs den en gång per request — noll nya queries.
+export const getBRFCountByCity = cache(async function getBRFCountByCity(city: string): Promise<number | null> {
   // Same filter as getBRFsByCity so the count matches the listing shown on the page.
   const { count, error } = await supabase
     .from('foretag')
@@ -91,16 +95,7 @@ export async function getBRFCountByCity(city: string): Promise<number | null> {
     .ilike('postort', `%${city}%`)
   if (error || count == null) return null
   return count
-}
-
-export async function getBRFCount(): Promise<number | null> {
-  const { count, error } = await supabase
-    .from('foretag')
-    .select('orgnr', { count: 'exact', head: true })
-    .eq('juridisk_form', 'Bostadsrättsföreningar')
-  if (error || count == null) return null
-  return count
-}
+})
 
 export async function getFeaturedBRFs(limit = 6): Promise<BRF[]> {
   const { data, error } = await supabase

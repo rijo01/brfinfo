@@ -3,14 +3,11 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getBRFBySlug, formatOrgnr, bildadAr, parseBvData, slugify, forvaltareFromCoAdress } from '@/lib/supabase'
 import { getEnergiByOrgnr } from '@/lib/energi'
+import { brfTitle, brfDescription, titleCase, fixaIHopskrivning } from '@/lib/seo'
 import { EnergiFakta, EnergiEjRegistrerad } from '@/components/EnergiFakta'
 import EnergiLeadCTA from '@/components/EnergiLeadCTA'
 import StickyClaimBar from '@/components/StickyClaimBar'
 import AdSlot from '@/components/AdSlot'
-
-function toTitleCase(str: string): string {
-  return str.toLowerCase().replace(/(?:^|\s|[-/])\S/g, (c) => c.toUpperCase())
-}
 
 // Next.js 15: params is a Promise
 type Props = { params: Promise<{ slug: string }> }
@@ -20,8 +17,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const brf = await getBRFBySlug(slug)
   if (!brf) return { title: 'BRF hittades inte' }
   return {
-    title: `${brf.namn} — Styrelseinfo, avgifter och kontakt`,
-    description: `Information om ${brf.namn} i ${brf.postort}. Org.nr ${formatOrgnr(brf.orgnr)}, bildad ${bildadAr(brf.startdatum)}. Styrelseinfo och kontaktuppgifter.`,
+    // Rå titel + "Styrelseinfo, avgifter" är borta: den kapades i 100 % av fallen
+    // och lovade två fält som ingen rad i registret har. Se lib/seo.ts.
+    title: { absolute: brfTitle(brf.namn, brf.postort, brf.adress) },
+    description: brfDescription({
+      namn: brf.namn,
+      postort: brf.postort,
+      orgnr: formatOrgnr(brf.orgnr),
+      ar: bildadAr(brf.startdatum),
+      status: brf.status,
+      adress: brf.adress,
+    }),
     alternates: { canonical: `https://brfinfo.se/brf/${brf.slug}` },
   }
 }
@@ -40,7 +46,11 @@ export default async function BRFPage({ params }: Props) {
   // index ur forvaltareFromCoAdress). Den kolumn-första extractForvaltare returnerade
   // råa "c/o X"-värden → c-o-slugar som routen är coAdress-only inte kan resolva → 404.
   const forvaltare = forvaltareFromCoAdress(brf)
-  const displayName = toTitleCase(brf.namn)
+  // Samma normalisering som titeln: den lokala toTitleCase saknade i-städningen
+  // och renderade "Lillängen Inacka" i <h1> medan titeln sa "Lillängen i Nacka".
+  // Här behålls hela det registrerade namnet — bara kortnamn() (Brf-förkortningen)
+  // är titel-specifik och används medvetet inte på sidan.
+  const displayName = titleCase(fixaIHopskrivning(brf.namn))
   const card = { background: 'white', border: '1px solid rgba(15,31,45,0.09)', borderRadius: 12, padding: '24px 28px', marginBottom: 16 }
   const cardTitle = { fontFamily: 'Fraunces, Georgia, serif', fontSize: 18, fontWeight: 400, color: '#0F1F2D', marginBottom: 16, letterSpacing: '-0.3px' } as React.CSSProperties
 

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getBRFsByCity, getBRFCountByCity } from '@/lib/supabase'
+import { stadTitle, stadDescription } from '@/lib/seo'
 import BRFCard from '@/components/BRFCard'
 import SearchBox from '@/components/SearchBox'
 
@@ -45,9 +46,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { city } = await params
   const m = META[city]
   const name = m?.name ?? city
+  // Samma memoiserade anrop som sidkomponenten gör — se getBRFCountByCity.
+  // Antalet stod redan i brödtexten men saknades i snippeten, vilket var den
+  // enskilt största outnyttjade CTR-hävstången på stad-sidorna.
+  const count = await getBRFCountByCity(name)
   return {
-    title: `BRF i ${name} — bostadsrättsföreningar med styrelseinfo`,
-    description: m?.desc ?? `Hitta BRF:er i ${name} med styrelseinfo och kontaktuppgifter.`,
+    // absolute: mallen i layouten får inte lägga på suffixet en gång till.
+    title: { absolute: stadTitle(name, count) },
+    // "styrelseinfo" är borta ur mallen — sajten har ingen styrelsedata.
+    description: stadDescription(name, count, m?.areas),
     alternates: { canonical: `https://brfinfo.se/stad/${city}` },
   }
 }

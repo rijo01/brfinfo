@@ -4,8 +4,11 @@ import { EnergiBadge } from '@/components/EnergiFakta'
 import EnergiLeadCTA from '@/components/EnergiLeadCTA'
 
 export const metadata: Metadata = {
-  title: 'Energideklaration för BRF — regler, energiklass A–G och giltighetstid',
-  description: 'Måste en bostadsrättsförening ha energideklaration? Vad står i den, hur länge gäller den och vad betyder energiklass A–G? Med intervallen i procent av nybyggnadskravet och hänvisning till lagtexten.',
+  // Frågan som titel, svaret först i beskrivningen. Den gamla titeln var 82 tkn
+  // (kapades) och beskrivningen 198 (kapades mitt i en fråga) — snippeten
+  // annonserade ett ämne, inte ett svar, och fick 0 klick på 182 exponeringar.
+  title: { absolute: 'Måste en BRF ha energideklaration? Regler och krav' },
+  description: 'Ja – och den gäller i tio år. Vad lagen kräver av föreningen, vad som står i deklarationen och vad energiklass A–G betyder. Med paragrafhänvisning.',
   alternates: { canonical: 'https://brfinfo.se/energideklaration' },
 }
 

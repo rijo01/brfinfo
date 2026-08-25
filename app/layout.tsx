@@ -10,7 +10,7 @@ import AdSenseScript from '@/components/AdSenseScript'
 export const metadata: Metadata = {
   metadataBase: new URL('https://brfinfo.se'),
   title: { default: 'BRFinfo.se — Sveriges BRF-register', template: '%s | BRFinfo.se' },
-  description: 'Hitta styrelseinfo, avgifter och kontakt för alla 26 795 BRF:er i Sverige. Data från Bolagsverket.',
+  description: 'Hitta styrelseinfo, avgifter och kontakt för över 29 000 BRF:er i Sverige. Data från Bolagsverket.',
   icons: { icon: '/favicon.svg' },
   robots: { index: true, follow: true },
   other: {

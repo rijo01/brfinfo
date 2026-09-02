@@ -3,8 +3,10 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getBRFBySlug, formatOrgnr, bildadAr, parseBvData, slugify, forvaltareFromCoAdress } from '@/lib/supabase'
 import { getEnergiByOrgnr } from '@/lib/energi'
+import { getWebbByOrgnr } from '@/lib/webb'
 import { brfTitle, brfDescription, titleCase, fixaIHopskrivning } from '@/lib/seo'
 import { EnergiFakta, EnergiEjRegistrerad } from '@/components/EnergiFakta'
+import WebbLankar from '@/components/WebbLankar'
 import EnergiLeadCTA from '@/components/EnergiLeadCTA'
 import StickyClaimBar from '@/components/StickyClaimBar'
 import AdSlot from '@/components/AdSlot'
@@ -37,7 +39,13 @@ export default async function BRFPage({ params }: Props) {
   const brf = await getBRFBySlug(slug)
   if (!brf) notFound()
 
-  const energi = await getEnergiByOrgnr(brf.orgnr)
+  // Båda är cachade/toleranta: getWebbByOrgnr slår mot ett cachat index och
+  // returnerar null om tabellen saknas eller databasen är nere. Sidan renderar
+  // då exakt som före den här funktionen.
+  const [energi, webb] = await Promise.all([
+    getEnergiByOrgnr(brf.orgnr),
+    getWebbByOrgnr(brf.orgnr),
+  ])
   const year = bildadAr(brf.startdatum)
   const orgnr = formatOrgnr(brf.orgnr)
 
@@ -172,6 +180,9 @@ export default async function BRFPage({ params }: Props) {
                 )}
               </div>
             )}
+
+            {/* Föreningens egna sidor — renderar null när data saknas */}
+            <WebbLankar webb={webb} />
 
             {/* Energideklaration */}
             {energi ? <EnergiFakta d={energi} /> : <EnergiEjRegistrerad />}

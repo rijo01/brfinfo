@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { BOLAG } from '@/lib/bolag'
 
 export default function Footer() {
   return (
@@ -16,7 +17,7 @@ export default function Footer() {
           {[
             { title: 'Hitta BRF', links: [{ href: '/sok', label: 'Sök BRF' }, { href: '/stad/stockholm', label: 'Stockholm' }, { href: '/stad/goteborg', label: 'Göteborg' }, { href: '/stad/malmo', label: 'Malmö' }] },
             { title: 'För företag', links: [{ href: '/claima', label: 'Claima BRF' }, { href: '/forvaltare-partner', label: 'Bli partner' }, { href: '/forvaltare', label: 'Alla förvaltare' }] },
-            { title: 'Om oss', links: [{ href: '/om', label: 'Om BRFinfo' }, { href: '/integritet', label: 'Integritetspolicy' }, { href: '/kontakt', label: 'Kontakt' }] },
+            { title: 'Om oss', links: [{ href: '/om', label: 'Om BRFinfo' }, { href: '/om#sa-funkar-datan', label: 'Så funkar datan' }, { href: '/integritet', label: 'Integritetspolicy' }, { href: '/kontakt', label: 'Kontakt' }] },
             { title: 'Resurser', links: [{ href: '/energideklaration', label: 'Energideklaration' }, { href: 'https://www.infofinder.se', label: 'Hitta företag på InfoFinder', external: true }] },
           ].map(col => (
             <div key={col.title}>
@@ -35,9 +36,17 @@ export default function Footer() {
             </div>
           ))}
         </div>
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 24, display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'rgba(255,255,255,0.25)' }}>
-          <span>© {new Date().getFullYear()} BRFinfo.se</span>
-          <span>Data från Bolagsverket och SCB</span>
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 24, display: 'flex', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap', fontSize: 12, color: 'rgba(255,255,255,0.25)' }}>
+          <span>
+            © {new Date().getFullYear()} BRFinfo.se — en tjänst från {BOLAG.namn}
+            {BOLAG.orgnr && ` · org.nr ${BOLAG.orgnr}`}
+            {' · '}
+            <a href={`mailto:${BOLAG.epost}`} style={{ color: 'rgba(255,255,255,0.35)', textDecoration: 'none' }}>{BOLAG.epost}</a>
+          </span>
+          <span>
+            Data från Bolagsverket och SCB —{' '}
+            <Link href="/om#sa-funkar-datan" style={{ color: 'rgba(255,255,255,0.35)', textDecoration: 'none' }}>så funkar datan</Link>
+          </span>
         </div>
       </div>
     </footer>

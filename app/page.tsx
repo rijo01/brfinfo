@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   // Rotsegmentets egen sida får inte layoutens '%s | BRFinfo.se'-mall påklistrad,
   // så varumärket står här. 49 tkn — ryms, till skillnad från den gamla på 62.
   title: 'Sök BRF — org.nr, adress och kontakt | BRFinfo.se',
-  description: 'Hitta styrelseinfo, avgifter och kontaktuppgifter för alla BRF:er i Sverige. Gratis register med data från Bolagsverket.',
+  description: 'Hitta org.nr, adress, bildandeår och kontaktuppgifter för alla BRF:er i Sverige. Gratis register med data från Bolagsverket.',
   alternates: { canonical: 'https://brfinfo.se' },
 }
 
@@ -57,7 +57,7 @@ export default async function HomePage() {
             <em style={{ color: '#E8B84B', fontStyle: 'normal' }}>BRF-register</em>
           </h1>
           <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 17, lineHeight: 1.6, maxWidth: 480, margin: '0 auto 36px' }}>
-            Styrelseinfo, avgifter och kontaktuppgifter för alla bostadsrättsföreningar i Sverige.
+            Org.nr, adress, bildandeår och kontaktuppgifter för alla bostadsrättsföreningar i Sverige.
           </p>
           <SearchBox />
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 16, flexWrap: 'wrap' }}>
@@ -70,7 +70,7 @@ export default async function HomePage() {
 
       {/* STATS */}
       <div style={{ background: '#1B7C6E', padding: '16px 24px', display: 'flex', justifyContent: 'center', gap: 60, flexWrap: 'wrap' }}>
-        {[{ num: brfCountLabel, label: 'BRF:er' }, { num: '290', label: 'Kommuner' }, { num: 'Officiell', label: 'Källa' }].map(s => (
+        {[{ num: brfCountLabel, label: 'BRF:er' }, { num: '290', label: 'Kommuner' }, { num: 'Bolagsverket', label: 'Datakälla' }].map(s => (
           <div key={s.label} style={{ textAlign: 'center', color: 'white' }}>
             <div style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 24, fontWeight: 600, letterSpacing: '-0.5px' }}>{s.num}</div>
             <div style={{ fontSize: 11, opacity: 0.65, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{s.label}</div>

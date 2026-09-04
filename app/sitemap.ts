@@ -31,6 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/hemsida`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
     { url: `${base}/energideklaration`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
     { url: `${base}/kontakt`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${base}/om`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
     { url: `${base}/integritet`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
     // Adressen som brfinfo-bots User-Agent pekar på. Webbansvariga som slår upp
     // boten i sin logg ska hitta sidan även via sök, inte bara via UA-strängen.

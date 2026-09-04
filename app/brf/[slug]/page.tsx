@@ -6,6 +6,7 @@ import { getBRFBySlug, getBRFByOrgnr, getBRFByNamnprefix, orgnrFromSlug, formatO
 import { getEnergiByOrgnr } from '@/lib/energi'
 import { getWebbByOrgnr } from '@/lib/webb'
 import { brfTitle, brfDescription, titleCase, fixaIHopskrivning } from '@/lib/seo'
+import { arMobilnummer, formateraTelefon } from '@/lib/kontakt'
 import { EnergiFakta, EnergiEjRegistrerad } from '@/components/EnergiFakta'
 import WebbLankar from '@/components/WebbLankar'
 import EnergiLeadCTA from '@/components/EnergiLeadCTA'
@@ -83,11 +84,19 @@ export default async function BRFPage({ params }: Props) {
   // index ur forvaltareFromCoAdress). Den kolumn-första extractForvaltare returnerade
   // råa "c/o X"-värden → c-o-slugar som routen är coAdress-only inte kan resolva → 404.
   const forvaltare = forvaltareFromCoAdress(brf)
+  const harBvInnehall = Boolean(
+    bvData && (bvData.verksamhetsbeskrivning || bvData.adress_bv || forvaltare || (bvData.sni_koder?.length ?? 0) > 0)
+  )
   // Samma normalisering som titeln: den lokala toTitleCase saknade i-städningen
   // och renderade "Lillängen Inacka" i <h1> medan titeln sa "Lillängen i Nacka".
   // Här behålls hela det registrerade namnet — bara kortnamn() (Brf-förkortningen)
   // är titel-specifik och används medvetet inte på sidan.
   const displayName = titleCase(fixaIHopskrivning(brf.namn))
+
+  // Mobilnummer visas inte: 07x är en styrelsemedlems privata telefon, inte
+  // föreningens växel, och registret skiljer inte på dem. E-postadresser visas
+  // oförändrade. Se lib/kontakt.ts.
+  const telefon = brf.telefon && !arMobilnummer(brf.telefon) ? formateraTelefon(brf.telefon) : null
   const card = { background: 'white', border: '1px solid rgba(15,31,45,0.09)', borderRadius: 12, padding: '24px 28px', marginBottom: 16 }
   const cardTitle = { fontFamily: 'Fraunces, Georgia, serif', fontSize: 18, fontWeight: 400, color: '#0F1F2D', marginBottom: 16, letterSpacing: '-0.3px' } as React.CSSProperties
 
@@ -115,13 +124,13 @@ export default async function BRFPage({ params }: Props) {
             <span style={{ color: 'rgba(255,255,255,0.7)' }}>{displayName}</span>
           </div>
           <h1 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 'clamp(28px, 5vw, 42px)', fontWeight: 300, color: 'white', letterSpacing: '-1px', lineHeight: 1.15, marginBottom: 8 }}>{displayName}</h1>
-          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.45)', marginBottom: 24 }}>{orgnr} · {brf.postort}, {brf.lan}</p>
+          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.45)', marginBottom: 24 }}>{[orgnr, [brf.postort, brf.lan].filter(Boolean).join(', ')].filter(Boolean).join(' · ')}</p>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            {[
-              { label: 'Bildad', value: year },
-              { label: 'Status', value: brf.status === 'Är verksam' ? 'Aktiv' : (brf.status ?? '—') },
+            {([
+              { label: 'Bildad', value: year !== 'Okänt' ? year : null },
+              { label: 'Status', value: brf.status === 'Är verksam' ? 'Aktiv' : brf.status },
               { label: 'Ort', value: brf.postort },
-            ].map(m => (
+            ].filter(m => m.value) as Array<{ label: string; value: string }>).map(m => (
               <div key={m.label} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '8px 16px', display: 'flex', gap: 8, alignItems: 'center' }}>
                 <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>{m.label}</span>
                 <span style={{ fontSize: 14, fontWeight: 500, color: 'white' }}>{m.value}</span>
@@ -141,24 +150,27 @@ export default async function BRFPage({ params }: Props) {
             <div style={card}>
               <h2 style={cardTitle}>Om {brf.namn}</h2>
               <p style={{ fontSize: 14, color: '#4A6070', lineHeight: 1.7 }}>
-                {brf.infotext || `${brf.namn} är en bostadsrättsförening belägen i ${brf.postort}, ${brf.lan}. Föreningen är registrerad hos Bolagsverket med organisationsnummer ${orgnr}${year !== 'Okänt' ? ` och bildades ${year}` : ''}.`}
+                {brf.infotext || `${brf.namn} är en bostadsrättsförening belägen i ${[brf.postort, brf.lan].filter(Boolean).join(', ')}. Föreningen är registrerad hos Bolagsverket med organisationsnummer ${orgnr}${year !== 'Okänt' ? ` och bildades ${year}` : ''}.`}
               </p>
             </div>
 
             {/* Register */}
             <div style={card}>
               <h2 style={cardTitle}>Registeruppgifter</h2>
-              {[
+              {/* Rader utan värde renderas inte alls. Ett "—" i en faktatabell ser ut
+                  som ett mätvärde som saknas; i själva verket har registret inget
+                  fält där, och en kortare tabell är sannare än en full av streck. */}
+              {([
                 { label: 'Organisationsnummer', value: orgnr },
                 { label: 'Juridisk form', value: 'Bostadsrättsförening' },
-                { label: 'Status', value: brf.status ?? '—' },
-                { label: 'Bildad', value: year !== 'Okänt' ? year : '—' },
-                { label: 'Adress', value: brf.adress ?? '—' },
+                { label: 'Status', value: brf.status },
+                { label: 'Bildad', value: year !== 'Okänt' ? year : null },
+                { label: 'Adress', value: brf.adress },
                 { label: 'Ort', value: brf.postort },
-                { label: 'Kommun', value: brf.kommun ?? '—' },
-                { label: 'Län', value: brf.lan ?? '—' },
-                { label: 'Bransch (SNI)', value: brf.bransch ?? '—' },
-              ].map((row, i, arr) => (
+                { label: 'Kommun', value: brf.kommun },
+                { label: 'Län', value: brf.lan },
+                { label: 'Bransch (SNI)', value: brf.bransch },
+              ].filter(r => r.value) as Array<{ label: string; value: string }>).map((row, i, arr) => (
                 <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: i < arr.length - 1 ? '1px solid rgba(15,31,45,0.05)' : 'none', fontSize: 14 }}>
                   <span style={{ color: '#6A8090' }}>{row.label}</span>
                   <span style={{ fontWeight: 500, color: '#1A2B38' }}>{row.value}</span>
@@ -167,7 +179,9 @@ export default async function BRFPage({ params }: Props) {
             </div>
 
             {/* Bolagsverket */}
-            {bvData && (
+            {/* bvData är sant även när JSON-objektet är tomt — då renderades rubriken
+                "Från Bolagsverket" över ingenting. Villkoret prövar innehållet. */}
+            {bvData && harBvInnehall && (
               <div style={card}>
                 <h2 style={cardTitle}>Från Bolagsverket</h2>
 
@@ -247,9 +261,9 @@ export default async function BRFPage({ params }: Props) {
           <div style={{ position: 'sticky', top: 80, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ background: 'white', border: '1px solid rgba(15,31,45,0.09)', borderRadius: 12, padding: '20px 22px' }}>
               <h2 style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 15, fontWeight: 400, color: '#0F1F2D', marginBottom: 14, letterSpacing: '-0.2px' }}>Kontakt</h2>
-              {brf.telefon && <div style={{ marginBottom: 8 }}><div style={{ fontSize: 10, color: '#8A9BAB', textTransform: 'uppercase', letterSpacing: '0.3px', marginBottom: 2 }}>Telefon</div><a href={`tel:${brf.telefon}`} style={{ fontSize: 13, color: '#1B7C6E', textDecoration: 'none', fontWeight: 500 }}>{brf.telefon}</a></div>}
+              {telefon && <div style={{ marginBottom: 8 }}><div style={{ fontSize: 10, color: '#8A9BAB', textTransform: 'uppercase', letterSpacing: '0.3px', marginBottom: 2 }}>Telefon</div><a href={`tel:${brf.telefon}`} style={{ fontSize: 13, color: '#1B7C6E', textDecoration: 'none', fontWeight: 500 }}>{telefon}</a></div>}
               {brf.email && <div style={{ marginBottom: 8 }}><div style={{ fontSize: 10, color: '#8A9BAB', textTransform: 'uppercase', letterSpacing: '0.3px', marginBottom: 2 }}>E-post</div><a href={`mailto:${brf.email}`} style={{ fontSize: 13, color: '#1B7C6E', textDecoration: 'none', fontWeight: 500 }}>{brf.email}</a></div>}
-              {!brf.telefon && !brf.email && <p style={{ fontSize: 12, color: '#8A9BAB', lineHeight: 1.5 }}>Kontaktuppgifter saknas.</p>}
+              {!telefon && !brf.email && <p style={{ fontSize: 12, color: '#8A9BAB', lineHeight: 1.5 }}>Kontaktuppgifter saknas.</p>}
               <Link href="/claima" style={{ display: 'block', textAlign: 'center', background: '#C9932A', color: '#0F1F2D', padding: '9px', borderRadius: 8, fontSize: 13, fontWeight: 500, textDecoration: 'none', marginTop: 12 }}>
                 Claima denna BRF
               </Link>

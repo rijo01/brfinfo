@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import Link from 'next/link'
-import { getBRFBySlug, formatOrgnr, bildadAr, parseBvData, slugify, forvaltareFromCoAdress } from '@/lib/supabase'
+import type { BRF } from '@/lib/supabase'
+import { getBRFBySlug, getBRFByOrgnr, getBRFByNamnprefix, orgnrFromSlug, formatOrgnr, bildadAr, parseBvData, slugify, forvaltareFromCoAdress } from '@/lib/supabase'
 import { getEnergiByOrgnr } from '@/lib/energi'
 import { getWebbByOrgnr } from '@/lib/webb'
 import { brfTitle, brfDescription, titleCase, fixaIHopskrivning } from '@/lib/seo'
@@ -14,9 +15,37 @@ import AdSlot from '@/components/AdSlot'
 // Next.js 15: params is a Promise
 type Props = { params: Promise<{ slug: string }> }
 
+// Resolverar slugen, ELLER pekar en historisk slug vidare till sin nuvarande form.
+//
+// Slugen är "<slugifierat namn>-<orgnr>". Namndelen har ändrats över tid (namnet
+// normaliseras om i registret) och orgnr har lagrats både osiffrat och formaterat —
+// samma förening har alltså haft flera URL:er. Orgnr binder ihop dem, så en okänd
+// slug slås upp på sitt orgnr och pekas om till den slug föreningen har nu.
+// Loggade exempel: /brf/brf-blamesen-7164104031 →
+// bostadsrattsforeningen-blamesen-7164104031, och
+// /brf/transformatorn-10-lidingo-769623-9453 (formaterat orgnr) →
+// bostadsrattsforening-transformatorn-10-lidingo-7696239453.
+//
+// ETT HOPP, ALDRIG EN KEDJA: målet är target.slug hämtad ur databasen, dvs. exakt
+// den sträng som uppslaget på slug matchar → /brf/<mål> svarar 200 och når aldrig
+// hit igen. Olikhetskontrollen utesluter dessutom självreferens.
+async function resolveBRFOrRedirect(slug: string): Promise<BRF | null> {
+  const brf = await getBRFBySlug(slug)
+  if (brf) return brf
+
+  // Bär slugen ett orgnr slås det upp direkt. Gör den inte det är den från tiden
+  // före orgnr-suffixet — då är den gamla slugen ett prefix av den nuvarande.
+  const orgnr = orgnrFromSlug(slug)
+  const target = orgnr ? await getBRFByOrgnr(orgnr) : await getBRFByNamnprefix(slug)
+  if (target?.slug && target.slug !== slug) {
+    permanentRedirect(`/brf/${target.slug}`) // kastar NEXT_REDIRECT → avbryter render
+  }
+  return null
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const brf = await getBRFBySlug(slug)
+  const brf = await resolveBRFOrRedirect(slug)
   if (!brf) return { title: 'BRF hittades inte' }
   return {
     // Rå titel + "Styrelseinfo, avgifter" är borta: den kapades i 100 % av fallen
@@ -36,7 +65,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BRFPage({ params }: Props) {
   const { slug } = await params
-  const brf = await getBRFBySlug(slug)
+  const brf = await resolveBRFOrRedirect(slug)
   if (!brf) notFound()
 
   // Båda är cachade/toleranta: getWebbByOrgnr slår mot ett cachat index och

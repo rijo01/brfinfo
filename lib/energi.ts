@@ -33,6 +33,12 @@ export const ENERGIKLASS_STADER: Record<string, string> = {
   uppsala: 'Uppsala',
 }
 
+// Städer som just nu ligger under en 301 till /energideklaration (se redirects i
+// next.config.js). Tabellen energideklarationer är tom, så ingen av dem har
+// innehåll. Sitemapen filtrerar bort dem — en sitemap får bara peka på 200.
+// Håll listan i synk med next.config.js; töms när energidatan är tillbaka.
+export const ENERGIKLASS_REDIRIGERADE: string[] = ['stockholm', 'goteborg', 'malmo', 'uppsala']
+
 /**
  * Finns minst en matchad energideklaration för kommunen?
  *

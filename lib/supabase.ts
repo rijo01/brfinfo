@@ -31,26 +31,88 @@ export type BRF = {
   featured: boolean | null
   verified: boolean | null
   forvaltare: string | null
-  bolagsverket_data: {
-    verksamhetsbeskrivning?: string
-    postadress_detaljer?: { coAdress?: string; utdelningsadress?: string; postnummer?: string; postort?: string }
-    adress_bv?: string
-    sni_koder?: Array<{ kod?: string; klartext?: string }>
-    registreringsdatum_bv?: string
-    verksam?: string
-    namn_bv?: string[]
-  } | null
+  // Rå kolumn: innehåller numera Bolagsverkets svarskuvert ({ organisationer: [...] }),
+  // historiskt den tillplattade BvFlat-formen, ibland som JSON-sträng. Läs den ALDRIG
+  // direkt — gå via parseBvData(), som normaliserar alla tre till BvFlat.
+  bolagsverket_data: unknown
 }
 
+// Den tillplattade formen som sidorna läser (parseBvData returnerar den).
+export type BvFlat = {
+  verksamhetsbeskrivning?: string
+  postadress_detaljer?: { coAdress?: string; utdelningsadress?: string; postnummer?: string; postort?: string }
+  adress_bv?: string
+  sni_koder?: Array<{ kod?: string; klartext?: string }>
+  registreringsdatum_bv?: string
+  verksam?: string
+  namn_bv?: string[]
+}
+
+// Slår upp EN BRF på slug.
+//
+// Skiljer "finns inte" (null) från "gick inte att svara på" (kastar). Tidigare
+// användes .single(), vars error-gren träffar BÅDA fallen: en tillfällig
+// DB-störning gav då samma null som en okänd slug → notFound() → en 404 som
+// ISR cachade in och Google hann indexera. Verifierat i loggen: 24 av 27 loggade
+// /brf-404:or (cache=MISS) svarar 200 vid direkt kontroll — sidorna fanns hela
+// tiden. Ett kastat fel ger i stället 500: inte cachebart, och Google försöker
+// igen i stället för att avindexera. Samma princip som harEnergiData() följer.
 export async function getBRFBySlug(slug: string): Promise<BRF | null> {
   const { data, error } = await supabase
     .from('foretag')
     .select('*')
     .eq('slug', slug)
     .eq('juridisk_form', 'Bostadsrättsföreningar')
-    .single()
-  if (error) return null
-  return data as BRF
+    .maybeSingle()
+  if (error) throw new Error(`getBRFBySlug(${slug}) misslyckades: ${error.message}`)
+  return (data as BRF | null) ?? null
+}
+
+// Slug-format: "<slugifierat namn>-<orgnr>" (orgnr = 10 siffror, osiffrat).
+// Historiska slugar bär samma orgnr men en annan namndel, eller ett formaterat
+// orgnr ("769643-2124"). Orgnr är därför nyckeln som binder gammal URL till ny.
+// Returnerar null när slugen inte bär något orgnr alls (äldsta formatet).
+export function orgnrFromSlug(slug: string): string | null {
+  const m = slug.match(/(\d{6})-?(\d{4})$/)
+  return m ? m[1] + m[2] : null
+}
+
+// Slår upp en förening på den ÄLDSTA slug-formen: bara det slugifierade namnet,
+// utan orgnr-suffix ("bostadsrattsforeningen-bojen-i-kalmar"). Nuvarande slug är
+// samma sträng plus "-<orgnr>", så den gamla URL:en är ett prefix av den nya.
+//
+// Kräver EXAKT en träff. 748 av ~28 700 namndelar delas av flera föreningar
+// (t.ex. "bostadsrattsforeningen-algen"); där går det inte att veta vilken URL:en
+// avsåg, så vi pekar inte om alls utan låter den 404:a. Hämtar två rader just för
+// att kunna se skillnad på "unik" och "tvetydig".
+//
+// Slugar består bara av [a-z0-9-], så strängen kan inte bära LIKE-jokrar.
+export async function getBRFByNamnprefix(namnslug: string): Promise<BRF | null> {
+  if (!/^[a-z0-9-]+$/.test(namnslug)) return null
+  const { data, error } = await supabase
+    .from('foretag')
+    .select('*')
+    .like('slug', `${namnslug}-%`)
+    .eq('juridisk_form', 'Bostadsrättsföreningar')
+    .limit(2)
+  if (error) throw new Error(`getBRFByNamnprefix(${namnslug}) misslyckades: ${error.message}`)
+  const rader = (data as BRF[] | null) ?? []
+  // Bara suffix som är ett rent orgnr räknas — annars matchar "…-algen" även
+  // "…-algen-2-<orgnr>", en helt annan förening.
+  const exakta = rader.filter(r => new RegExp(`^${namnslug}-\\d{10}$`).test(r.slug))
+  return exakta.length === 1 ? exakta[0] : null
+}
+
+// Samma skillnad mellan "finns inte" och "gick inte att svara på" som ovan.
+export async function getBRFByOrgnr(orgnr: string): Promise<BRF | null> {
+  const { data, error } = await supabase
+    .from('foretag')
+    .select('*')
+    .eq('orgnr', orgnr)
+    .eq('juridisk_form', 'Bostadsrättsföreningar')
+    .maybeSingle()
+  if (error) throw new Error(`getBRFByOrgnr(${orgnr}) misslyckades: ${error.message}`)
+  return (data as BRF | null) ?? null
 }
 
 export async function searchBRFs(query: string, limit = 30): Promise<BRF[]> {
@@ -115,12 +177,84 @@ export type Forvaltare = {
   count: number
 }
 
-export function parseBvData(brf: BRF): BRF['bolagsverket_data'] {
+// Bolagsverkets råa svarskuvert ({ organisationer: [ ... ] }). Enrichern lagrar numera
+// API-svaret oförändrat i foretag.bolagsverket_data; tidigare lagrades en tillplattad
+// egen form. Typen nedan täcker bara de noder vi faktiskt läser.
+type BvEnvelope = {
+  organisationer?: Array<{
+    verksamhetsbeskrivning?: { beskrivning?: string | null } | null
+    postadressOrganisation?: {
+      postadress?: {
+        coAdress?: string | null
+        utdelningsadress?: string | null
+        postnummer?: string | null
+        postort?: string | null
+      } | null
+    } | null
+    naringsgrenOrganisation?: { sni?: Array<{ kod?: string; klartext?: string }> | null } | null
+    organisationsdatum?: { registreringsdatum?: string | null } | null
+    verksamOrganisation?: { kod?: string | null } | null
+    organisationsnamn?: { organisationsnamnLista?: Array<{ namn?: string | null }> | null } | null
+  }> | null
+}
+
+// Normaliserar Bolagsverkets kuvert till den tillplattade formen som sidorna läser.
+//
+// BAKGRUND (orsaken till ~1100 av 1241 loggade 404:or): enrichern bytte lagringsformat
+// till Bolagsverkets råa svar, men läsarna letade kvar på de gamla nycklarna
+// (bv.postadress_detaljer.coAdress m.fl.). Alla blev undefined för ALLA 29 407 rader →
+// forvaltareFromCoAdress() returnerade null för varje BRF → förvaltarindexet blev tomt
+// → /forvaltare visade "0 förvaltningsbolag" och HELA /forvaltare/<slug> 404:ade
+// (inklusive hsb-stockholm, sbc, riksbyggen). Dessutom slutade c-o-→ren-redirecten
+// nedan att avfyra, eftersom den kräver att målet resolvar.
+//
+// Båda formerna stöds: har objektet "organisationer" mappas det om, annars antas det
+// redan vara den tillplattade formen (äldre rader).
+function normalizeBvData(raw: unknown): BvFlat | null {
+  if (!raw || typeof raw !== 'object') return null
+  const env = raw as BvEnvelope
+  if (!Array.isArray(env.organisationer)) return raw as BvFlat
+  const o = env.organisationer[0]
+  if (!o) return null
+
+  const post = o.postadressOrganisation?.postadress ?? null
+  // Tomma SNI-platshållare ("     " / "") filtreras bort — Bolagsverket fyller alltid
+  // listan till fem poster oavsett hur många koder som faktiskt är satta.
+  const sni = (o.naringsgrenOrganisation?.sni ?? [])
+    .filter(s => (s?.kod ?? '').trim() !== '' && (s?.klartext ?? '').trim() !== '')
+    .map(s => ({ kod: s.kod?.trim(), klartext: s.klartext?.trim() }))
+  const namn = (o.organisationsnamn?.organisationsnamnLista ?? [])
+    .map(n => n?.namn)
+    .filter((n): n is string => Boolean(n))
+  const adressBv = [post?.utdelningsadress, [post?.postnummer, post?.postort].filter(Boolean).join(' ')]
+    .map(s => (s ?? '').trim())
+    .filter(Boolean)
+    .join(', ')
+
+  return {
+    verksamhetsbeskrivning: o.verksamhetsbeskrivning?.beskrivning?.trim() || undefined,
+    postadress_detaljer: post
+      ? {
+          coAdress: post.coAdress ?? undefined,
+          utdelningsadress: post.utdelningsadress ?? undefined,
+          postnummer: post.postnummer ?? undefined,
+          postort: post.postort ?? undefined,
+        }
+      : undefined,
+    adress_bv: adressBv || undefined,
+    sni_koder: sni.length ? sni : undefined,
+    registreringsdatum_bv: o.organisationsdatum?.registreringsdatum ?? undefined,
+    verksam: o.verksamOrganisation?.kod ?? undefined,
+    namn_bv: namn.length ? namn : undefined,
+  }
+}
+
+export function parseBvData(brf: BRF): BvFlat | null {
   if (!brf.bolagsverket_data) return null
   if (typeof brf.bolagsverket_data === 'string') {
-    try { return JSON.parse(brf.bolagsverket_data) } catch { return null }
+    try { return normalizeBvData(JSON.parse(brf.bolagsverket_data)) } catch { return null }
   }
-  return brf.bolagsverket_data
+  return normalizeBvData(brf.bolagsverket_data)
 }
 
 // Härled förvaltare ENBART ur coAdress (filtrerar bort personnamn, strippar "c/o").

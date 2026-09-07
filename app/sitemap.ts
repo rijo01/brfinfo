@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next'
-import { energiklassSlugsMedData } from '@/lib/energi'
+import { energiklassSlugsMedData, ENERGIKLASS_REDIRIGERADE } from '@/lib/energi'
+import { META as STAD_META } from '@/lib/stader'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,9 +11,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // /energiklass/stockholm hårdkodad här trots att den renderade en tom sida —
   // vi bjöd alltså in Google till tunt innehåll. Listan fyller sig själv när
   // enrichern läst in data.
-  const energiklassUrls: MetadataRoute.Sitemap = (await energiklassSlugsMedData()).map(slug => ({
-    url: `${base}/energiklass/${slug}`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.7,
-  }))
+  //
+  // Städer som ligger under en 301 i next.config.js filtreras bort: en sitemap får
+  // bara innehålla URL:er som svarar 200, aldrig sådana som omdirigerar. Kopplingen
+  // gör att raderna försvinner ur sitemapen även om datan kommer tillbaka innan
+  // redirecten tas bort.
+  const energiklassUrls: MetadataRoute.Sitemap = (await energiklassSlugsMedData())
+    .filter(slug => !ENERGIKLASS_REDIRIGERADE.includes(slug))
+    .map(slug => ({
+      url: `${base}/energiklass/${slug}`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.7,
+    }))
 
   const statics: MetadataRoute.Sitemap = [
     { url: base, lastModified: new Date(), changeFrequency: 'daily', priority: 1 },
@@ -27,8 +35,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Adressen som brfinfo-bots User-Agent pekar på. Webbansvariga som slår upp
     // boten i sin logg ska hitta sidan även via sök, inte bara via UA-strängen.
     { url: `${base}/om-boten`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
-    // Måste matcha de kuraterade städerna i app/stad/[city]/page.tsx (META) — annars tunna/saknade sidor.
-    ...['stockholm','goteborg','malmo','uppsala','linkoping','orebro','vasteras','helsingborg','norrkoping','jonkoping','gavle','boras','eskilstuna','karlstad','lulea','sundsvall','trollhattan','halmstad','ostersund','falun','vaxjo','umea','lund','borlange','sodertalje','kalmar'].map(c => ({
+    // Läses direkt ur routens META i stället för en andra hårdkodad kopia: listan
+    // kan inte längre glida isär från de städer routen faktiskt svarar 200 på.
+    ...Object.keys(STAD_META).map(c => ({
       url: `${base}/stad/${c}`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.8,
     })),
     ...energiklassUrls,

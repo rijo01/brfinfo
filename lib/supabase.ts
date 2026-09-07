@@ -305,8 +305,19 @@ async function buildForvaltareIndex(): Promise<Record<string, PackedBRF[]>> {
       .select('orgnr,namn,slug,postort,adress,rank_score,bolagsverket_data')
       .eq('juridisk_form', 'Bostadsrättsföreningar')
       .not('bolagsverket_data', 'is', null)
+      // ORDER BY krävs för stabil offset-paginering — exakt samma skäl som i
+      // app/sitemap.ts: utan order kör Postgres parallell seq-scan vars radordning
+      // skiljer sig mellan range-requesten, så fönstren överlappar och hoppar över
+      // rader. Här blir följden att förvaltare tyst saknas ur indexet och deras
+      // sidor 404:ar. updated_at är indexerad (snabb) och orgnr (unik) som
+      // tiebreaker ger total ordning, så ingen sidgräns kan tappa eller dubblera.
+      .order('updated_at', { ascending: true, nullsFirst: false })
+      .order('orgnr', { ascending: true })
       .range(offset, offset + batchSize - 1)
-    if (error || !data || data.length === 0) break
+    // Ett fel får INTE tyst ge ett halvbyggt index: unstable_cache skulle cacha
+    // det i 24 h och 404:a varje förvaltare som saknades. Kasta i stället.
+    if (error) throw new Error(`buildForvaltareIndex misslyckades vid offset ${offset}: ${error.message}`)
+    if (!data || data.length === 0) break
     for (const row of data as BRF[]) {
       const f = forvaltareFromCoAdress(row)
       if (!f) continue

@@ -334,7 +334,58 @@ async function buildForvaltareIndex(): Promise<Record<string, PackedBRF[]>> {
   for (const name of Object.keys(tmp)) {
     index[name] = tmp[name].sort((a, b) => b.rank - a.rank).map(x => x.r)
   }
+  granskaForvaltarindex(index)
   return index
+}
+
+// Antal förvaltare med >=2 BRF vid senaste verifierade mätningen (2026-09-07),
+// kontrollräknat mot ett fullständigt uttag av alla 29 407 rader med
+// bolagsverket_data. Det är samma tal som /forvaltare visar.
+//
+// Uppdatera medvetet när registret faktiskt har vuxit eller krympt — aldrig för
+// att "få bygget att gå igenom".
+export const FORVALTARE_BASLINJE = 317
+const FORVALTARE_TOLERANS = 0.3
+
+// Invariant för förvaltarindexet. Kastar hellre än returnerar ett index som ser
+// fel ut — och eftersom /forvaltare prerendreras vid build faller HELA BYGGET
+// här, i stället för att en tom eller halv karta cachas i 24 h och 404:ar varje
+// förvaltarsida. Det var precis så det gick till förra gången: enrichern bytte
+// format, indexet blev tomt, sajten svarade 200 med "0 förvaltningsbolag" och
+// 1 107 URL:er 404:ade i tysthet tills GSC upptäckte det en vecka senare.
+//
+// FORMATKONTRAKT — foretag.bolagsverket_data:
+//   Kolumnen innehåller Bolagsverkets råa svar:
+//     { organisationer: [ { postadressOrganisation: { postadress: { coAdress } },
+//                           verksamhetsbeskrivning: { beskrivning },
+//                           naringsgrenOrganisation: { sni: [...] },
+//                           organisationsdatum: { registreringsdatum },
+//                           verksamOrganisation: { kod },
+//                           organisationsnamn: { organisationsnamnLista: [...] } } ] }
+//   Historiska rader kan i stället bära den platta formen (BvFlat) eller en
+//   JSON-sträng. parseBvData() normaliserar alla tre — läs ALDRIG kolumnen rå.
+//   Byter enrichern format igen blir coAdress undefined för varje rad, indexet
+//   tomt, och den här funktionen stoppar bygget i stället för att släppa igenom
+//   en trasig sajt. Se lib/__tests__/getBRFBySlug.test.ts för kontraktets tester.
+function granskaForvaltarindex(index: Record<string, PackedBRF[]>): void {
+  const antal = Object.values(index).filter(brfs => brfs.length >= 2).length
+  if (antal === 0) {
+    throw new Error(
+      'Förvaltarindexet blev TOMT. Nästan alltid formatdrift i foretag.bolagsverket_data: ' +
+      'coAdress hittas inte längre på organisationer[0].postadressOrganisation.postadress. ' +
+      'Kontrollera formatkontraktet ovan och parseBvData() innan du rör den här kontrollen.',
+    )
+  }
+  const avvikelse = Math.abs(antal - FORVALTARE_BASLINJE) / FORVALTARE_BASLINJE
+  if (avvikelse > FORVALTARE_TOLERANS) {
+    throw new Error(
+      `Förvaltarindexet avviker ${Math.round(avvikelse * 100)} % från baslinjen: ` +
+      `${antal} förvaltare med >=2 BRF mot förväntade ${FORVALTARE_BASLINJE}. ` +
+      'Antingen har registret ändrats på riktigt (uppdatera FORVALTARE_BASLINJE medvetet) ' +
+      'eller så har paginering/format gått sönder igen — 805 var talet när paginering ' +
+      'utan ORDER BY dubblerade rader.',
+    )
+  }
 }
 
 // Cachas i 24 h. Förvaltardata (Bolagsverket coAdress) ändras månadsvis → 24 h ger

@@ -19,10 +19,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { stad } = await params
   const kommun = ENERGIKLASS_STADER[stad]
   if (!kommun) return { title: 'Sidan hittades inte', robots: { index: false, follow: false } }
+  // noindex så länge kommunen saknar data. Tabellen energideklarationer är tom
+  // (0 rader) — sidan skulle alltså bjuda in Google till en katalog utan poster.
+  // Villkoret är datadrivet och inte en hårdkodad flagga: dagen enrichern läst in
+  // Boverkets register lyfts noindex av sig själv, utan att någon behöver minnas
+  // det. follow:true så crawlern ändå går vidare till BRF-sidorna.
+  const harData = await harEnergiData(kommun)
   return {
     title: `Energiklass för BRF:er i ${kommun} — energideklarationer`,
     description: `Bostadsrättsföreningar i ${kommun} med registrerad energideklaration. Jämför energiklass A–G och primärenergital. Data från Boverket.`,
     alternates: { canonical: `https://brfinfo.se/energiklass/${stad}` },
+    robots: harData === true ? undefined : { index: false, follow: true },
   }
 }
 

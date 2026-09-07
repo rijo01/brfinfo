@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import StyrelseguideKopKnapp from '@/components/StyrelseguideKopKnapp'
+import { BOLAG } from '@/lib/bolag'
 
 export const metadata: Metadata = {
   title: 'Den välskötta bostadsrättsföreningen — handbok för BRF-styrelsen',
@@ -95,12 +96,32 @@ export default function StyrelseguidePage() {
         name: 'Den välskötta bostadsrättsföreningen',
         description: 'Praktisk handbok för BRF-styrelsen: 20 kapitel i 6 delar med checklista i varje kapitel, 50 spartips, 30 vanliga misstag och ett mallpaket med 15 mallar. Faktagranskad mot primärkällor. ~89 sidor.',
         brand: { '@type': 'Brand', name: 'BRFinfo.se' },
+        // Säljaren MÅSTE anges per offer. Utan offers.seller underkänner Google
+        // "Säljaruppgifter" på merchant listing-utökningen (GSC: 1 ogiltig) och
+        // hela produktresultatet faller bort ur rika resultat. Sidan säljer på
+        // riktigt (Stripe Checkout via /api/checkout), så schemat ska vara kvar
+        // och kompletteras — inte tas bort.
+        //
+        // Namn och org.nr läses ur lib/bolag.ts (BD-2: en enda källa, aldrig
+        // gissad). identifier renderas först när orgnr faktiskt är ifyllt —
+        // ett påhittat org.nr i strukturerad data vore samma fel som ett
+        // påhittat org.nr på sidan, fast maskinläsbart.
         offers: VISIBLE_PAKET.map(p => ({
           '@type': 'Offer',
           name: p.namn,
           price: p.pris.replace(/[^\d]/g, ''),
           priceCurrency: 'SEK',
           availability: 'https://schema.org/InStock',
+          url: 'https://brfinfo.se/styrelseguide',
+          seller: {
+            '@type': 'Organization',
+            name: BOLAG.namn,
+            url: 'https://brfinfo.se',
+            email: BOLAG.epost,
+            ...(BOLAG.orgnr
+              ? { identifier: { '@type': 'PropertyValue', propertyID: 'SE:organisationsnummer', value: BOLAG.orgnr } }
+              : {}),
+          },
         })),
       }) }} />
 

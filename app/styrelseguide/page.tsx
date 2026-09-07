@@ -96,6 +96,12 @@ export default function StyrelseguidePage() {
         name: 'Den välskötta bostadsrättsföreningen',
         description: 'Praktisk handbok för BRF-styrelsen: 20 kapitel i 6 delar med checklista i varje kapitel, 50 spartips, 30 vanliga misstag och ett mallpaket med 15 mallar. Faktagranskad mot primärkällor. ~89 sidor.',
         brand: { '@type': 'Brand', name: 'BRFinfo.se' },
+        // image är OBLIGATORISKT för merchant listings — det var det som fällde
+        // "Säljaruppgifter" i GSC ("Fältet image saknas"), inte säljaren. Bilden
+        // är handbokens FAKTISKA omslag, renderat ur den PDF som levereras vid
+        // köp (content/styrelseguide-pdf/handboken.pdf, sid 1) — inte en
+        // stockbild eller en favicon. Renderas om från PDF:en när omslaget byts.
+        image: ['https://brfinfo.se/styrelseguide-omslag.png'],
         // Säljaren MÅSTE anges per offer. Utan offers.seller underkänner Google
         // "Säljaruppgifter" på merchant listing-utökningen (GSC: 1 ogiltig) och
         // hela produktresultatet faller bort ur rika resultat. Sidan säljer på

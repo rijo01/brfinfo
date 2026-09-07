@@ -1,0 +1,11 @@
+RÄTTELSE: raden "Ref: DE.47" i det här commit-meddelandet är ogiltig.
+
+DE.47 var en post i ett ANNAT repos beslutslogg och motsvarar inget beslut i
+brfinfo. Referensen går inte att slå upp här och ska inte läsas som belagd.
+
+Commiten vilar i själva verket på BD-2 (avsändarens org.nr slås upp, gissas
+aldrig; tomt fält renderas inte) och BD-1 (verifiering mot avläst produktion
+efter framtvingad omdeploy, alltid med negativkontroll). Se DECISIONS.md, som
+infördes efter den här commiten — regeln om Ref-rader är BD-3.
+
+Meddelandet skrivs medvetet inte om: commiten var redan pushad.
